@@ -91,6 +91,28 @@ services:
       rabbitmq: { condition: service_healthy }
     networks: [platform-net]
 
+  nutrition-service:
+    build:
+      context: ../..
+      dockerfile: services/nutrition-service/Dockerfile
+    environment:
+      PORT: 3000
+      SERVICE_NAME: nutrition-service
+      DATABASE_URL: postgresql://platform:local_dev_password@postgres:5432/platform?schema=public
+      REDIS_URL: redis://redis:6379
+      REDIS_KEY_PREFIX: "nb:"
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: dev_secret_min_32_chars_change_me_xx
+      THROTTLE_LIMIT: 100000
+      # D3 — deterministic provider so e2e runs offline with stable numbers.
+      FOOD_PROVIDER: mock
+    ports: ["3004:3000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    networks: [platform-net]
+
 volumes:
   pgdata:
 

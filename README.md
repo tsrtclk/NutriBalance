@@ -43,6 +43,9 @@ services/
                     computeTargets: Mifflin-St Jeor BMR → TDEE → paced
                     calories → macros + water), weight entries (the curve).
                     This is the reference service shape — copy it for new ones.
+  nutrition-service/ É3 — food search/barcode via a swappable provider port
+                    (OpenFoodFacts or deterministic mock), custom foods,
+                    favorites/recents, journal with snapshot macros + day totals
 e2e/              Cucumber/Gherkin harness driving the live API (generic steps)
 infra/docker/     compose + Kong skeleton + runtime tsconfig
 scripts/          smoke-tests.sh — one endpoint per service through the gateway
@@ -86,7 +89,7 @@ AGENTS.md         the methodology any LLM/agent follows in this repo
 ```bash
 npm run prisma:generate
 npm run lint && npm run format:check && npm run typecheck && npm run test
-npm run infra:up          # Postgres+PostGIS, Redis, RabbitMQ, Kong, auth+profile
+npm run infra:up          # Postgres+PostGIS, Redis, RabbitMQ, Kong, auth+profile+nutrition
 npm run prisma:migrate:deploy   # apply migrations (DATABASE_URL from .env)
 npm run test:e2e          # Cucumber suite through Kong (auth/profile/weight)
 ```

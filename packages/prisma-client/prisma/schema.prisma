@@ -26,6 +26,9 @@ model User {
 
   profile               Profile?
   weight_entries        WeightEntry[]
+  custom_foods          FoodItem[]
+  journal_entries       JournalEntry[]
+  favorite_foods        FavoriteFood[]
   audit_logs            AuditLog[]
   offline_queue_entries OfflineQueue[]
 
@@ -68,6 +71,69 @@ model WeightEntry {
 
   @@index([user_id, measured_at])
   @@map("weight_entries")
+}
+
+/// É3 — a food, either cached from OpenFoodFacts (`source = "off"`, global,
+/// keyed by barcode) or user-created (`source = "custom"`, owned). Nutrition
+/// is normalised per 100 g; journal entries snapshot their own numbers so
+/// editing a food never rewrites history.
+model FoodItem {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  source            String   @db.VarChar(10) // off | custom
+  off_barcode       String?  @unique @db.VarChar(40)
+  owner_id          String?  @db.Uuid // custom foods only; OFF cache rows are global
+  name              String   @db.VarChar(200)
+  brand             String?  @db.VarChar(120)
+  kcal_per_100g     Decimal  @db.Decimal(7, 2)
+  protein_per_100g  Decimal  @db.Decimal(6, 2)
+  carbs_per_100g    Decimal  @db.Decimal(6, 2)
+  fat_per_100g      Decimal  @db.Decimal(6, 2)
+  serving_size_g    Decimal? @db.Decimal(6, 1)
+  created_at        DateTime @default(now()) @db.Timestamptz()
+  updated_at        DateTime @updatedAt @default(now()) @db.Timestamptz()
+
+  owner           User?          @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  journal_entries JournalEntry[]
+  favorited_by    FavoriteFood[]
+
+  @@index([owner_id])
+  @@index([name])
+  @@map("food_items")
+}
+
+/// É3 — one journal line: a food eaten at a meal on a day. kcal/macros are a
+/// snapshot computed at write time from quantity × per-100g values.
+model JournalEntry {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String   @db.Uuid
+  food_item_id String   @db.Uuid
+  meal         String   @db.VarChar(12) // breakfast | lunch | dinner | snack
+  quantity_g   Decimal  @db.Decimal(7, 1)
+  eaten_on     DateTime @db.Date
+  kcal         Decimal  @db.Decimal(8, 2)
+  protein_g    Decimal  @db.Decimal(7, 2)
+  carbs_g      Decimal  @db.Decimal(7, 2)
+  fat_g        Decimal  @db.Decimal(7, 2)
+  created_at   DateTime @default(now()) @db.Timestamptz()
+
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  food_item FoodItem @relation(fields: [food_item_id], references: [id])
+
+  @@index([user_id, eaten_on])
+  @@map("journal_entries")
+}
+
+/// É3 — user's starred foods for one-tap logging.
+model FavoriteFood {
+  user_id      String   @db.Uuid
+  food_item_id String   @db.Uuid
+  created_at   DateTime @default(now()) @db.Timestamptz()
+
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  food_item FoodItem @relation(fields: [food_item_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, food_item_id])
+  @@map("favorite_foods")
 }
 
 /// Generic audit trail written by the kit's AuditInterceptor.

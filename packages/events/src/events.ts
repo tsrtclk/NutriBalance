@@ -13,6 +13,9 @@ export const PLATFORM_EVENTS = [
   // profile-service (É1 / É7)
   "profile.updated",
   "weight.logged",
+  // nutrition-service (É3)
+  "food.created",
+  "journal.entry_logged",
 ] as const;
 
 export type PlatformEventName = (typeof PLATFORM_EVENTS)[number];

@@ -36,6 +36,8 @@ CHECKS=(
   "auth|POST|auth/login|400"
   "profile|GET|profile|401"
   "profile|GET|weight-entries|401"
+  "nutrition|GET|foods/search|401"
+  "nutrition|GET|journal|401"
 )
 
 for entry in "${CHECKS[@]}"; do

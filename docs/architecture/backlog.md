@@ -6,8 +6,8 @@
 > (`D#` decision, `B#` feature, `X#` cross-cutting). Reference IDs from code
 > (`// backlog: D1`), commit bodies, and PRs so code ↔ backlog stay linked.
 
-**Last updated:** 2026-07-11 (foundation slice: domain schema + auth-service
-(É2) + profile-service (É1 + É7 weight curve)).
+**Last updated:** 2026-07-11 (É3 slice: nutrition-service — foods +
+provider port + journal).
 
 ---
 
@@ -32,14 +32,15 @@ On **every** feature/fix slice:
 
 MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there).
 
-| Tier    | Épics                                                            | State                                               |
-| ------- | ---------------------------------------------------------------- | --------------------------------------------------- |
-| MVP     | É2 authentification                                              | ✅ done & wired (register/login/refresh/logout)     |
-| MVP     | É1 profil/onboarding                                             | 🟢 API done (targets computed; D1 sign-off pending) |
-| MVP     | É7 progrès                                                       | 🟠 weight curve done; photos/mesures → B4           |
-| MVP     | É3 alimentaire · É6 sportif                                      | ⬜ not started (B2, B3)                             |
-| Confort | É4 hydratation · É5 compléments · É9 notifications               | ⬜ not started (water _target_ ships in É1 targets) |
-| Diff.   | É8 IA coach · É10 gamification · É11 intégrations · É12 réglages | ⬜ not started                                      |
+| Tier    | Épics                                                            | State                                                                     |
+| ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| MVP     | É2 authentification                                              | ✅ done & wired (register/login/refresh/logout)                           |
+| MVP     | É1 profil/onboarding                                             | 🟢 API done (targets computed; D1 sign-off pending)                       |
+| MVP     | É7 progrès                                                       | 🟠 weight curve done; photos/mesures → B4                                 |
+| MVP     | É3 alimentaire                                                   | 🟢 API done (search/barcode/custom/journal/favoris; recettes+photo → B14) |
+| MVP     | É6 sportif                                                       | ⬜ not started (B3)                                                       |
+| Confort | É4 hydratation · É5 compléments · É9 notifications               | ⬜ not started (water _target_ ships in É1 targets)                       |
+| Diff.   | É8 IA coach · É10 gamification · É11 intégrations · É12 réglages | ⬜ not started                                                            |
 
 ---
 
@@ -47,10 +48,11 @@ MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there)
 
 Code uses a safe default + a `// backlog: D#` comment. Each needs a product call.
 
-| ID  | Decision needed                                                                                                                                                                                                                                   | Safe default in code                                                                                              | Where                                                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| D1  | **Target-formula constants** (É1): default/max weekly rates (loss 0.75/1.0 %BW, gain 0.25/0.5 %BW), macro split (protein g/kg per goal, fat 25% kcal), recomp −10% TDEE, 1200 kcal floor, water 35 ml/kg + activity bump. Needs product sign-off. | Named constants, pure fn returns a breakdown so the UI can explain itself                                         | `profile-service/src/modules/profile/compute-targets.ts` |
-| D2  | **Session policy**: access 15 min / refresh 30 d, single session per (user, device), refresh reuse kills the device session. Confirm lifetimes + whether parallel sessions per device are needed.                                                 | Env-tunable TTLs (`JWT_ACCESS_TTL_SEC`, `JWT_REFRESH_TTL_SEC`); rotation enforced via Redis `rt:{sub}:{deviceId}` | `auth-service/src/modules/auth/auth.service.ts`          |
+| ID  | Decision needed                                                                                                                                                                                                                                                           | Safe default in code                                                                                              | Where                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| D1  | **Target-formula constants** (É1): default/max weekly rates (loss 0.75/1.0 %BW, gain 0.25/0.5 %BW), macro split (protein g/kg per goal, fat 25% kcal), recomp −10% TDEE, 1200 kcal floor, water 35 ml/kg + activity bump. Needs product sign-off.                         | Named constants, pure fn returns a breakdown so the UI can explain itself                                         | `profile-service/src/modules/profile/compute-targets.ts` |
+| D2  | **Session policy**: access 15 min / refresh 30 d, single session per (user, device), refresh reuse kills the device session. Confirm lifetimes + whether parallel sessions per device are needed.                                                                         | Env-tunable TTLs (`JWT_ACCESS_TTL_SEC`, `JWT_REFRESH_TTL_SEC`); rotation enforced via Redis `rt:{sub}:{deviceId}` | `auth-service/src/modules/auth/auth.service.ts`          |
+| D3  | **Food data provider** (É3): OpenFoodFacts impl exists but the deterministic mock is bound outside production (`FOOD_PROVIDER`). Before flipping the prod default: contract-test the OFF mapping against the live API + decide a cache-refresh policy for stale OFF rows. | Swappable port `FOOD_DATA_PROVIDER`; mock in dev/CI so tests run offline with stable numbers                      | `nutrition-service/src/modules/foods/provider/`          |
 
 ---
 
@@ -58,21 +60,23 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 
 "Blocked by" → the decisions/services/X-items that must exist first.
 
-| ID  | Feature                                                                                              | Épic | Blocked by |
-| --- | ---------------------------------------------------------------------------------------------------- | ---- | ---------- |
-| B1  | Auth brute-force protection: per-account lockout / progressive delay (only a coarse IP throttle now) | É2   | —          |
-| B2  | Food journal service: OpenFoodFacts search, barcode, manual foods, meals, daily totals vs targets    | É3   | —          |
-| B3  | Workout service: exercise library, splits, sessions (sets×reps×load), rest timer, progression        | É6   | —          |
-| B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                             | É7   | —          |
-| B5  | Hydration logging (targets already served by `GET /profile/targets` → `water_ml`)                    | É4   | —          |
-| B6  | Supplements: list, dosage/schedule, intake history                                                   | É5   | —          |
-| B7  | Notifications service (meal/hydration/supplement/workout reminders)                                  | É9   | B2, B5, B6 |
-| B8  | AI coach on the Claude API (daily advice, plateau detection, chat, weekly report)                    | É8   | B2, B3     |
-| B9  | Gamification: streaks, badges, weekly challenges                                                     | É10  | B2, B3     |
-| B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                      | É11  | —          |
-| B11 | Settings: units (kg/lb), per-type notification toggles, RGPD account/data deletion                   | É12  | —          |
-| B12 | Flutter app shell under `mobile/` + first authenticated journey                                      | —    | —          |
-| B13 | Password reset / email verification flow (register/login ship without either)                        | É2   | —          |
+| ID  | Feature                                                                                                                                                                       | Épic | Blocked by |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------- |
+| B1  | Auth brute-force protection: per-account lockout / progressive delay (only a coarse IP throttle now)                                                                          | É2   | —          |
+| B2  | ~~Food journal service~~ → done (see §6); remaining É3 extras tracked as B14                                                                                                  | É3   | —          |
+| B3  | Workout service: exercise library, splits, sessions (sets×reps×load), rest timer, progression                                                                                 | É6   | —          |
+| B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                                                                                                      | É7   | —          |
+| B5  | Hydration logging (targets already served by `GET /profile/targets` → `water_ml`)                                                                                             | É4   | —          |
+| B6  | Supplements: list, dosage/schedule, intake history                                                                                                                            | É5   | —          |
+| B7  | Notifications service (meal/hydration/supplement/workout reminders)                                                                                                           | É9   | B2, B5, B6 |
+| B8  | AI coach on the Claude API (daily advice, plateau detection, chat, weekly report)                                                                                             | É8   | B2, B3     |
+| B9  | Gamification: streaks, badges, weekly challenges                                                                                                                              | É10  | B2, B3     |
+| B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                               | É11  | —          |
+| B11 | Settings: units (kg/lb), per-type notification toggles, RGPD account/data deletion                                                                                            | É12  | —          |
+| B12 | Flutter app shell under `mobile/` + first authenticated journey                                                                                                               | —    | —          |
+| B13 | Password reset / email verification flow (register/login ship without either)                                                                                                 | É2   | —          |
+| B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                           | É3   | —          |
+| B15 | Daily totals **vs targets** in one response (journal totals live in nutrition-service, targets in profile-service — needs a BFF/aggregate call or client-side merge decision) | É3   | —          |
 
 ---
 
@@ -89,11 +93,13 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 
 Forward map: when a blocker lands, what to unblock.
 
-| Blocker (resolve →)       | Unblocks                                                        |
-| ------------------------- | --------------------------------------------------------------- |
-| D1 product sign-off       | Final target numbers surfaced in the mobile UI without caveats  |
-| B2 food journal · B5 · B6 | B7 notifications content, B8 coach inputs, B9 streak sources    |
-| B12 mobile shell          | `flutter-integration-testing` journeys, `mobile-ux-review` work |
+| Blocker (resolve →)  | Unblocks                                                        |
+| -------------------- | --------------------------------------------------------------- |
+| D1 product sign-off  | Final target numbers surfaced in the mobile UI without caveats  |
+| D3 OFF contract test | Flipping `FOOD_PROVIDER` default to openfoodfacts in prod       |
+| B5 · B6              | B7 notifications content, B9 streak sources (B2 side is ✅)     |
+| B3 workouts          | B8 coach inputs (journal side is ✅)                            |
+| B12 mobile shell     | `flutter-integration-testing` journeys, `mobile-ux-review` work |
 
 ---
 
@@ -101,6 +107,7 @@ Forward map: when a blocker lands, what to unblock.
 
 Move items here when ticked (date · ID · what landed · PR).
 
+- 2026-07-11 · B2 · nutrition-service landed: OFF/mock provider port, food search/barcode/custom, favorites/recents, journal with snapshot macros + day totals.
 - 2026-07-11 · (bootstrap item) "replace the example `Place` domain" → NutriBalance schema (users/profiles/weight_entries) landed with the foundation slice.
 - 2026-07-11 · (bootstrap item) "wire the auth service (É2)" → `services/auth-service` issues/rotates/revokes JWTs; e2e login helper implemented; CI e2e job enabled.
 
@@ -108,6 +115,15 @@ Move items here when ticked (date · ID · what landed · PR).
 
 ## 7. Changelog (per slice)
 
+- **2026-07-11 · É3 slice** — `nutrition-service`: `FoodItem`/`JournalEntry`/
+  `FavoriteFood` models + migration; swappable `FOOD_DATA_PROVIDER` port
+  (deterministic mock for dev/CI, OpenFoodFacts impl for prod — D3); food
+  search (local + provider, cached by barcode), barcode lookup, custom foods,
+  favorites, recents; journal with write-time macro snapshots, per-meal day
+  view + totals; events `food.created`/`journal.entry_logged`; Kong/compose/
+  smoke wiring; `nutrition.feature` e2e (4 scenarios). B2 resolved; added
+  B14 (recettes/repas types/photo), B15 (totals-vs-targets aggregation).
+  Next: B3 (É6 workouts), B12 (mobile shell).
 - **2026-07-11 · foundation slice** — replaced the example domain with the
   NutriBalance schema (User+credentials, Profile, WeightEntry) + initial
   migration; built `auth-service` (É2: register/login/refresh-rotation/logout,

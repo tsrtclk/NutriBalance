@@ -2,7 +2,7 @@ import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import assert from "node:assert/strict";
 
 import { PlatformWorld } from "../support/world";
-import { loginViaOtp, uniquePhone } from "../support/auth";
+import { registerAndLogin, uniqueEmail } from "../support/auth";
 
 function getPath(obj: any, path: string): any {
   return path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
@@ -13,10 +13,10 @@ function getPath(obj: any, path: string): any {
 Given(
   "a logged-in user {string}",
   async function (this: PlatformWorld, actor: string) {
-    const phone = uniquePhone();
-    const { token, userId } = await loginViaOtp(
+    const email = uniqueEmail();
+    const { token, userId } = await registerAndLogin(
       this.baseUrl,
-      phone,
+      email,
       `e2e-${actor}-device`,
     );
     this.tokens[actor] = token;
@@ -24,45 +24,36 @@ Given(
   },
 );
 
-// Same as above, but also stash the phone so other steps can address this user
-// (e.g. a P2P transfer that targets them by phone).
+// Same as above, but also stash the email so other steps can address this user.
 Given(
-  "a logged-in user {string} whose phone is saved as {string}",
+  "a logged-in user {string} whose email is saved as {string}",
   async function (this: PlatformWorld, actor: string, varName: string) {
-    const phone = uniquePhone();
-    const { token, userId } = await loginViaOtp(
+    const email = uniqueEmail();
+    const { token, userId } = await registerAndLogin(
       this.baseUrl,
-      phone,
+      email,
       `e2e-${actor}-device`,
     );
     this.tokens[actor] = token;
     this.userIds[actor] = userId;
-    this.vars[varName] = phone;
+    this.vars[varName] = email;
   },
 );
 
-// Multipart upload of a small text document (document-service). The content is
-// stashed in `docContent` so a later download can verify the encryption round-trip.
-When(
-  "{string} uploads a document titled {string} of type {string}",
-  async function (
-    this: PlatformWorld,
-    actor: string,
-    title: string,
-    type: string,
-  ) {
-    const content = `KOYDAS-DOC-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
-    this.vars.docContent = content;
-    const form = new FormData();
-    form.append("file", new Blob([content], { type: "text/plain" }), "doc.txt");
-    form.append("type", type);
-    form.append("title", title);
-    this.lastResponse = await this.http.request({
-      method: "POST",
-      url: "/documents",
-      headers: this.authHeader(actor),
-      data: form,
-    });
+// A fresh unique identifier for scenarios that drive registration explicitly.
+Given(
+  "a unique email saved as {string}",
+  function (this: PlatformWorld, varName: string) {
+    this.vars[varName] = uniqueEmail();
+  },
+);
+
+// Adopt a token captured from an earlier response (e.g. register/refresh) so
+// later authenticated steps can act as that user.
+Given(
+  "{string} uses {string} as their bearer token",
+  function (this: PlatformWorld, actor: string, token: string) {
+    this.tokens[actor] = this.interpolate(token);
   },
 );
 

@@ -19,10 +19,11 @@ event bus, e2e harness, and working protocol instead of re-deriving them.
 3. **Épics 8, 10, 11** — AI coach, gamification, integrations →
    differentiation / added value.
 
-Épic 2 (auth) is marked _fait_ in the product backlog; the JWT-issuing auth
-service still has to be wired into this repo (see bootstrap status below).
+Épic 2 (auth) is **wired**: `services/auth-service` is the only token issuer
+(register/login/refresh-rotation/logout); every other service verifies through
+`@platform/service-kit`.
 
-## What's in it (from the skeleton)
+## What's in it
 
 ```
 packages/
@@ -33,10 +34,15 @@ packages/
   events/         RabbitMQ topic-exchange bus: EventBusModule (publisher),
                   consumePlatformEvents (consumer), typed event registry
   shared-types/   cross-service types (currency, locale, result, GeoJSON, auth level)
-  prisma-client/  shared Prisma schema shell (example User + Place geo model) + client
+  prisma-client/  the NutriBalance Prisma schema (users, profiles,
+                  weight_entries + kit models) + migrations + client
 services/
-  example-service/  the canonical service shape: a `places` module (CRUD + geo
-                    search + emits a domain event) on @platform/service-kit
+  auth-service/     É2 — the ONLY token-issuing service: register/login,
+                    refresh rotation (Redis-pinned jti), logout blacklist
+  profile-service/  É1+É7 — profile upsert, GET /profile/targets (pure
+                    computeTargets: Mifflin-St Jeor BMR → TDEE → paced
+                    calories → macros + water), weight entries (the curve).
+                    This is the reference service shape — copy it for new ones.
 e2e/              Cucumber/Gherkin harness driving the live API (generic steps)
 infra/docker/     compose + Kong skeleton + runtime tsconfig
 scripts/          smoke-tests.sh — one endpoint per service through the gateway
@@ -67,22 +73,22 @@ AGENTS.md         the methodology any LLM/agent follows in this repo
 ## Bootstrap status
 
 - [x] Repo initiated from `platform-skeleton` + product backlog imported
-- [ ] Replace the example `Place`/`User` models in
-      `packages/prisma-client/prisma/schema.prisma` with the NutriBalance
-      domain (profile, food journal, workouts, hydration, supplements, …)
-- [ ] Add services under `services/` (copy `example-service`'s shape):
-      profile, nutrition, workout, …
-- [ ] Wire the JWT-issuing auth service (Épic 2 — register/login/refresh;
-      skeleton services are verify-only)
-- [ ] Flutter app shell under `mobile/`
+- [x] Replace the example `Place`/`User` models with the NutriBalance domain
+      (users + credentials, profiles, weight entries; food journal & workouts
+      come with B2/B3)
+- [x] Add services under `services/`: auth-service (É2), profile-service
+      (É1 + É7 weight curve)
+- [x] Wire the JWT-issuing auth service (Épic 2 — register/login/refresh)
+- [ ] Flutter app shell under `mobile/` (backlog B12)
 
 ## Develop
 
 ```bash
 npm run prisma:generate
 npm run lint && npm run format:check && npm run typecheck && npm run test
-npm run infra:up          # Postgres+PostGIS, Redis, RabbitMQ, Kong, example-service
-npm run test:e2e          # after wiring an auth service for the e2e login helper
+npm run infra:up          # Postgres+PostGIS, Redis, RabbitMQ, Kong, auth+profile
+npm run prisma:migrate:deploy   # apply migrations (DATABASE_URL from .env)
+npm run test:e2e          # Cucumber suite through Kong (auth/profile/weight)
 ```
 
 ## Methodology

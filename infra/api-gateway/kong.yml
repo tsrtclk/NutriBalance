@@ -4,11 +4,24 @@ _format_version: "3.0"
 # tiers are dev-relaxed (high) so the e2e suite isn't 429'd; production runs its
 # own Kong config with real limits.
 services:
-  - name: example-service
-    url: http://example-service:3000
+  - name: auth-service
+    url: http://auth-service:3000
     routes:
-      - name: example-routes
-        paths: ["/api/v1/places"]
+      - name: auth-routes
+        paths: ["/api/v1/auth"]
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 100000
+          policy: redis
+          redis_host: redis
+
+  - name: profile-service
+    url: http://profile-service:3000
+    routes:
+      - name: profile-routes
+        paths: ["/api/v1/profile", "/api/v1/weight-entries"]
         strip_path: false
     plugins:
       - name: rate-limiting

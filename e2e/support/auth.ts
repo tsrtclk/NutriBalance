@@ -1,35 +1,36 @@
 import axios from "axios";
 
 /**
- * Log a test user in and return a JWT for the e2e suite.
- *
- * ⚠️ Product-specific: implement this against YOUR auth service. The skeleton
- * has no token issuer (services are verify-only). Typical implementation:
- * request an OTP / password login through the gateway, then return the access
- * token. See the upstream reference (Köydaş) for a dev-OTP-log-scraping example.
+ * Mint a fresh, isolated test user: register through the live auth-service
+ * (É2 — email+password) and return its access token. Each scenario calls this
+ * with a unique email, so scenarios are independent and parallel-safe.
  */
-export async function loginViaOtp(
+export async function registerAndLogin(
   baseUrl: string,
-  identifier: string,
+  email: string,
   deviceId: string,
 ): Promise<{ token: string; userId: string }> {
-  void baseUrl;
-  void identifier;
-  void deviceId;
-  void axios;
-  throw new Error(
-    "loginViaOtp is a stub — implement it for your auth service (e2e/support/auth.ts).",
+  const res = await axios.post(
+    `${baseUrl}/auth/register`,
+    {
+      email,
+      password: "E2e-test-pass-1",
+      full_name: "E2E User",
+      device_id: deviceId,
+    },
+    { validateStatus: () => true },
   );
+  if (res.status !== 201) {
+    throw new Error(
+      `register failed (${res.status}): ${JSON.stringify(res.data)}`,
+    );
+  }
+  const data = res.data?.data ?? res.data;
+  return { token: data.tokens.access_token, userId: data.user.id };
 }
 
 /** A unique identifier per scenario so test users are isolated. */
-export function uniquePhone(): string {
-  const n = (
-    (Date.now() % 100_000) * 10_000 +
-    Math.floor(Math.random() * 10_000)
-  )
-    .toString()
-    .padStart(9, "0")
-    .slice(-9);
-  return `+1${n}`;
+export function uniqueEmail(): string {
+  const n = `${Date.now().toString(36)}${Math.floor(Math.random() * 1_000_000).toString(36)}`;
+  return `e2e-${n}@nutribalance.test`;
 }

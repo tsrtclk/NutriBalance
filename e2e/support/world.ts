@@ -6,8 +6,8 @@ import {
 } from "@cucumber/cucumber";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
-// Login may back off through the OTP rate-limit window (5/60s), so allow steps
-// plenty of time before failing.
+// Registration hashes passwords (bcrypt) and parallel scenarios share the
+// stack, so allow steps plenty of time before failing.
 setDefaultTimeout(120_000);
 
 /**

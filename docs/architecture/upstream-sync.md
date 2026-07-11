@@ -45,7 +45,9 @@
 
 Newest first. `Status`: ⏳ pending · ✅ synced (date · skeleton ref).
 
-| Generic change | Origin (PR/slice) | Status |
-| -------------- | ----------------- | ------ |
-
-_(none yet)_
+| Generic change                                                                                                                                                                                          | Origin (PR/slice)           | Status     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ---------- |
+| `service-kit`: `UserPayload` made product-neutral (generic `email` identifier, dropped `cooperativeIds`); auth module/strategy/guard comments + error messages de-Köydaş'ed (English, no service names) | 2026-07-11 foundation slice | ⏳ pending |
+| `events`: publisher doc/source label de-Köydaş'ed (`SERVICE_NAME` fallback `platform`)                                                                                                                  | 2026-07-11 foundation slice | ⏳ pending |
+| e2e harness: generic steps `a unique email saved as "<var>"` and `"<actor>" uses "<token>" as their bearer token` (drive registration/token-adoption scenarios with no product step code)               | 2026-07-11 foundation slice | ⏳ pending |
+| `new-service` skill: reference-service wording made repo-relative (upstream keeps `example-service`)                                                                                                    | 2026-07-11 foundation slice | ⏳ pending |

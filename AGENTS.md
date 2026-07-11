@@ -11,9 +11,9 @@ disciplines below) in sync with the upstream `platform-skeleton` repo (see
 Profile-derived calorie/macro targets (Mifflin-St Jeor BMR + TDEE), food
 journal (OpenFoodFacts + barcode scan), workout tracking with progressive
 overload, progress curves, AI coach on the Claude API. The product backlog
-(12 épics + MVP prioritisation) is `docs/product/backlog.md`; Épic 2 (auth)
-is marked done there but the JWT-issuing auth service is not yet wired into
-this repo.
+(12 épics + MVP prioritisation) is `docs/product/backlog.md`. Épic 2 (auth)
+is wired: `auth-service` is the only token issuer; É1 (profile + targets) and
+the É7 weight curve live in `profile-service`.
 
 ## Stack
 
@@ -26,7 +26,8 @@ this repo.
 
 ```
 packages/   service-kit, events, shared-types, prisma-client
-services/   verify-only NestJS services (start from example-service)
+services/   auth-service (the ONLY token issuer) · profile-service
+            (verify-only; the reference shape for new services)
 e2e/        Cucumber harness (live API through Kong)
 infra/      docker-compose + Kong skeleton
 docs/architecture/backlog.md   working-protocol
@@ -40,7 +41,7 @@ npm run prisma:generate         # before typecheck after schema changes
 npm run lint && npm run format:check
 npm run typecheck
 npm run test
-npm run infra:up && npm run test:e2e   # live e2e (needs an auth service wired)
+npm run infra:up && npm run prisma:migrate:deploy && npm run test:e2e   # live e2e
 ```
 
 ## Service kit
@@ -51,7 +52,7 @@ interceptors / interfaces + `PrismaModule`, `RedisModule`, verify-only
 `AuthModule`, and the `geo` PostGIS helper. A service supplies only its own
 `configuration.ts` (a **superset of `ServiceKitConfig`** — must provide `redis`
 
-- `jwt`) and its feature modules. `example-service` is the reference shape.
+- `jwt`) and its feature modules. `profile-service` is the reference shape.
   The kit also ships the offline-sync replay `SyncEngine` (idempotent on
   `client_op_id`, `entity_versions` bump, per-`operation_type` handler
   dispatch) — see the `offline-first-mobile` skill for the full pattern.
@@ -153,6 +154,9 @@ wedged-daemon recovery live in
    (`@platform/*`); the runtime resolves them via `tsconfig-paths` +
    `infra/docker/runtime-tsconfig.json` — add new packages to **both** path maps.
 4. uuid PKs are DB-generated; raw inserts omit `id` + `updated_at` defaults.
-5. Verify-only services never issue tokens — that's a separate auth service.
+5. Verify-only services never issue tokens — that's `auth-service`'s job.
 6. Gateway has no global JWT plugin — each service enforces auth (`@Public`
    exempts login/refresh).
+7. All services share ONE Redis key prefix (`nb:`, backlog X1): the kit's JWT
+   strategy reads the `bl:access:*` blacklist through it — a per-service
+   prefix silently breaks logout/revocation.

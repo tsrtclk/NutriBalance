@@ -1,0 +1,25 @@
+{
+  "name": "@platform/events",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared RabbitMQ event bus — typed domain events, publisher (NestJS) and consumer helper for Köydaş services",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  }
+}

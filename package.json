@@ -1,0 +1,53 @@
+{
+  "name": "nutribalance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NutriBalance — nutrition, hydration, supplements & training tracking. Built on platform-skeleton (Turborepo + NestJS + Flutter)",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "e2e"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
+    "prisma:generate": "npm run prisma:generate -w @platform/prisma-client",
+    "prisma:migrate": "npm run prisma:migrate -w @platform/prisma-client",
+    "infra:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "test:e2e": "npm run test:e2e -w @platform/e2e",
+    "prepare": "husky",
+    "prisma:migrate:deploy": "npm run prisma:migrate:deploy -w packages/prisma-client"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5",
+    "turbo": "^1.13.0",
+    "typescript": "^5.4.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=10.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24.16.0"
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  check:
+    name: Lint · Typecheck · Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # turbo's changed-since lint filter needs history
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npm run format:check
+      # PRs lint only packages changed vs the base branch. Pushes lint
+      # everything: on a push the checked-out commit IS the branch head, so a
+      # changed-since filter would match zero packages and merged code would
+      # never get linted.
+      - name: Lint (changed packages on PRs, everything on pushes)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run lint -- --filter=...[origin/${{ github.base_ref }}]
+          else
+            npm run lint
+          fi
+      - run: npm run typecheck
+      - run: npm run test
+
+  # E2E (Cucumber) against the full compose stack — uncomment once your product
+  # wires an auth service for the e2e login helper (the skeleton's is stubbed).
+  # Load-bearing details of the pattern:
+  #   - start the WHOLE stack: with a partial stack Kong fails DNS for the
+  #     missing containers and every scenario touching them dies on
+  #     "name resolution failed"
+  #   - readiness gate = scripts/smoke-tests.sh (one endpoint per service
+  #     through Kong), so routing + liveness are proven before the suite runs —
+  #     and the deploy smoke script is exercised on every CI run
+  #   - artifact uploads (coverage, reports) must be best-effort:
+  #     `continue-on-error: true` + `retention-days: 3` — a full account
+  #     artifact quota must not fail CI
+  #
+  # e2e:
+  #   name: E2E (Cucumber)
+  #   runs-on: ubuntu-latest
+  #   needs: check
+  #   timeout-minutes: 30
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #     - uses: actions/setup-node@v6
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: "npm"
+  #     - run: npm ci
+  #     - run: npm run prisma:generate
+  #     - name: Start database + broker
+  #       run: docker compose -f infra/docker/docker-compose.yml up -d postgres redis rabbitmq
+  #     - name: Wait for Postgres
+  #       # -h 127.0.0.1 forces a TCP check; without it pg_isready passes on the
+  #       # unix socket the entrypoint's TEMPORARY initdb server answers while
+  #       # the published port is still down, and migrate dies with P1001.
+  #       run: |
+  #         for i in $(seq 1 30); do
+  #           if docker compose -f infra/docker/docker-compose.yml exec -T postgres pg_isready -h 127.0.0.1 -U platform -d platform; then
+  #             exit 0
+  #           fi
+  #           sleep 2
+  #         done
+  #         echo "Postgres did not become ready" >&2
+  #         exit 1
+  #     - name: Apply migrations
+  #       env:
+  #         DATABASE_URL: postgresql://platform:local_dev_password@localhost:5432/platform?schema=public
+  #       run: npm run prisma:migrate:deploy
+  #     - name: Build + start gateway and services
+  #       run: docker compose -f infra/docker/docker-compose.yml up -d --build
+  #     - name: Wait for the API (Kong → all services)
+  #       run: |
+  #         for i in $(seq 1 60); do
+  #           if ./scripts/smoke-tests.sh local; then
+  #             exit 0
+  #           fi
+  #           sleep 3
+  #         done
+  #         echo "API did not become ready" >&2
+  #         exit 1
+  #     - name: Run E2E suite
+  #       run: npm run test:e2e
+  #     - name: Dump stack logs on failure
+  #       if: failure()
+  #       run: docker compose -f infra/docker/docker-compose.yml logs --no-color --tail=300
+  #     - name: Tear down
+  #       if: always()
+  #       run: docker compose -f infra/docker/docker-compose.yml down -v

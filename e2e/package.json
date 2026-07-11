@@ -1,0 +1,17 @@
+{
+  "name": "@platform/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cucumber (Gherkin) end-to-end regression suite — drives the live API through Kong",
+  "scripts": {
+    "test:e2e": "cucumber-js",
+    "test:e2e:serial": "cucumber-js --profile serial"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.2.0",
+    "@types/node": "^20.11.0",
+    "axios": "^1.7.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}

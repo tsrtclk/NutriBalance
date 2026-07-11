@@ -1,0 +1,74 @@
+# Local stack for the platform skeleton. Add your services alongside
+# example-service; add a Kong route for each in ../api-gateway/kong.yml.
+services:
+  postgres:
+    image: imresamu/postgis:17-3.5
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: local_dev_password
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U platform -d platform"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [platform-net]
+
+  redis:
+    image: redis:8-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [platform-net]
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports: ["5672:5672", "15672:15672"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [platform-net]
+
+  kong:
+    image: kong/kong-gateway:3.10
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+    ports: ["8000:8000"]
+    volumes:
+      - ../api-gateway/kong.yml:/etc/kong/kong.yml:ro
+    depends_on: [redis]
+    networks: [platform-net]
+
+  example-service:
+    build:
+      context: ../..
+      dockerfile: services/example-service/Dockerfile
+    environment:
+      PORT: 3000
+      SERVICE_NAME: example-service
+      DATABASE_URL: postgresql://platform:local_dev_password@postgres:5432/platform?schema=public
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: dev_secret_min_32_chars_change_me_xx
+      THROTTLE_LIMIT: 100000
+    ports: ["3001:3000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    networks: [platform-net]
+
+volumes:
+  pgdata:
+
+networks:
+  platform-net:

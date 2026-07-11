@@ -1,0 +1,18 @@
+{
+  "_comment": "Runtime-only config consumed by `node -r tsconfig-paths/register` in the service images. tsc does NOT rewrite TS path aliases (@platform/*) in the emitted JS, so at runtime they must be resolved here. Because services import the shared packages from source, tsc nests the build as dist/services/<svc>/src and dist/packages/<pkg>/src; baseUrl=dist maps the aliases onto those compiled packages.",
+  "compilerOptions": {
+    "baseUrl": "dist",
+    "paths": {
+      "@platform/shared-types": ["packages/shared-types/src"],
+      "@platform/shared-types/*": ["packages/shared-types/src/*"],
+      "@platform/shared-utils": ["packages/shared-utils/src"],
+      "@platform/shared-utils/*": ["packages/shared-utils/src/*"],
+      "@platform/prisma-client": ["packages/prisma-client/src"],
+      "@platform/prisma-client/*": ["packages/prisma-client/src/*"],
+      "@platform/events": ["packages/events/src"],
+      "@platform/events/*": ["packages/events/src/*"],
+      "@platform/service-kit": ["packages/service-kit/src"],
+      "@platform/service-kit/*": ["packages/service-kit/src/*"]
+    }
+  }
+}

@@ -1,6 +1,6 @@
-// Platform skeleton — generic Prisma schema. Replace the example models with
-// your product's domain. PostGIS is enabled to demo the `geo` helper; uuid PKs
-// are DB-generated (raw-SQL inserts omit id) — keep that convention.
+// NutriBalance domain schema. uuid PKs are DB-generated (raw-SQL inserts omit
+// id) — keep that convention. PostGIS stays enabled for the kit's `geo` helper
+// even though no NutriBalance table carries geometry yet.
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
@@ -12,36 +12,62 @@ datasource db {
   extensions = [postgis]
 }
 
-/// A platform user. Tokens are minted by your auth service; other services
-/// verify-only (see @platform/service-kit AuthModule).
+/// A NutriBalance account. Tokens are minted by auth-service; every other
+/// service verify-only (see @platform/service-kit AuthModule).
 model User {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email      String   @unique @db.VarChar(200)
-  full_name  String   @db.VarChar(100)
-  auth_level Int      @default(0)
-  created_at DateTime @default(now()) @db.Timestamptz()
-  updated_at DateTime @updatedAt @default(now()) @db.Timestamptz()
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String   @unique @db.VarChar(200)
+  password_hash String   @db.VarChar(100)
+  full_name     String   @db.VarChar(100)
+  auth_level    Int      @default(1)
+  locale        String   @default("fr") @db.VarChar(10)
+  created_at    DateTime @default(now()) @db.Timestamptz()
+  updated_at    DateTime @updatedAt @default(now()) @db.Timestamptz()
 
-  places Place[]
-  audit_logs AuditLog[]
+  profile               Profile?
+  weight_entries        WeightEntry[]
+  audit_logs            AuditLog[]
   offline_queue_entries OfflineQueue[]
 
   @@map("users")
 }
 
-/// Example geo-bearing model (demonstrates the `geo` helper + raw-SQL pattern).
-model Place {
-  id         String                              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  owner_id   String                              @db.Uuid
-  name       String                              @db.VarChar(200)
-  location   Unsupported("geometry(Point, 4326)")
-  created_at DateTime                            @default(now()) @db.Timestamptz()
-  updated_at DateTime                            @updatedAt @default(now()) @db.Timestamptz()
+/// É1 — profile & onboarding: the inputs of the BMR/TDEE/macro target
+/// computation (profile-service recomputes targets on read; nothing derived is
+/// stored here — see computeTargets).
+model Profile {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String    @unique @db.Uuid
+  sex              String    @db.VarChar(10) // male | female
+  birth_date       DateTime  @db.Date
+  height_cm        Decimal   @db.Decimal(5, 1)
+  weight_kg        Decimal   @db.Decimal(5, 2) // current weight, synced from the latest WeightEntry
+  activity_level   String    @db.VarChar(20) // sedentary | light | moderate | active | very_active
+  goal             String    @db.VarChar(20) // lose | maintain | gain | recomp
+  target_weight_kg Decimal?  @db.Decimal(5, 2)
+  target_date      DateTime? @db.Date
+  training_level   String?   @db.VarChar(20) // beginner | intermediate | advanced
+  equipment        String?   @db.VarChar(10) // none | home | gym
+  created_at       DateTime  @default(now()) @db.Timestamptz()
+  updated_at       DateTime  @updatedAt @default(now()) @db.Timestamptz()
 
-  owner User @relation(fields: [owner_id], references: [id])
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([owner_id])
-  @@map("places")
+  @@map("profiles")
+}
+
+/// É7 — progress: the weight curve. One row per measurement.
+model WeightEntry {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  weight_kg   Decimal  @db.Decimal(5, 2)
+  measured_at DateTime @default(now()) @db.Timestamptz()
+  created_at  DateTime @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, measured_at])
+  @@map("weight_entries")
 }
 
 /// Generic audit trail written by the kit's AuditInterceptor.

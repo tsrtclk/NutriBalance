@@ -8,11 +8,11 @@ import type { UserPayload } from "../common/interfaces/user-payload.interface";
 import { RedisService } from "../redis/redis.service";
 
 /**
- * Validates Bearer access tokens issued by user-service.
+ * Validates Bearer access tokens issued by the product's auth service.
  *
- * Cryptographic validity + Redis blacklist check (matches user-service's
- * blacklist namespace: `bl:access:{sub}:{deviceId}`). asset-service never
- * issues tokens — only verifies them.
+ * Cryptographic validity + Redis blacklist check (matches the auth service's
+ * blacklist namespace: `bl:access:{sub}:{deviceId}`). Kit consumers never
+ * issue tokens — only verify them.
  */
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(
@@ -38,7 +38,7 @@ export class JwtAccessStrategy extends PassportStrategy(
     if (!payload.sub || !payload.deviceId) {
       throw new UnauthorizedException({
         code: "INVALID_TOKEN",
-        message: "Geçersiz token",
+        message: "Invalid token",
       });
     }
 
@@ -48,7 +48,7 @@ export class JwtAccessStrategy extends PassportStrategy(
     if (blacklisted) {
       throw new UnauthorizedException({
         code: "TOKEN_REVOKED",
-        message: "Token iptal edilmiş",
+        message: "Token has been revoked",
       });
     }
 

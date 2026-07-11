@@ -13,7 +13,7 @@ type Conn = Awaited<ReturnType<typeof amqp.connect>>;
 type Chan = Awaited<ReturnType<Conn["createChannel"]>>;
 
 /**
- * Publisher for Köydaş domain events. Best-effort: a broker outage logs a
+ * Publisher for platform domain events. Best-effort: a broker outage logs a
  * warning and the caller's request still succeeds — events are fire-and-forget,
  * never on the critical path. Inject and call `publish(name, data)`.
  */
@@ -30,7 +30,7 @@ export class EventBusService implements OnModuleInit, OnModuleDestroy {
       config.get<string>("rabbitmq.url") ??
       process.env.RABBITMQ_URL ??
       "amqp://localhost:5672";
-    this.source = process.env.SERVICE_NAME ?? "koydas";
+    this.source = process.env.SERVICE_NAME ?? "platform";
   }
 
   async onModuleInit(): Promise<void> {

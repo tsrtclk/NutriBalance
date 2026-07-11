@@ -33,7 +33,9 @@ FAIL=0
 # @Public POST with an empty {} body is rejected by validation (400) before
 # any write — either way the check is side-effect-free in every environment.
 CHECKS=(
-  "example|GET|places|401"
+  "auth|POST|auth/login|400"
+  "profile|GET|profile|401"
+  "profile|GET|weight-entries|401"
 )
 
 for entry in "${CHECKS[@]}"; do

@@ -1,5 +1,5 @@
-# Local stack for the platform skeleton. Add your services alongside
-# example-service; add a Kong route for each in ../api-gateway/kong.yml.
+# Local NutriBalance stack. Add new services alongside auth/profile; add a
+# Kong route for each in ../api-gateway/kong.yml.
 services:
   postgres:
     image: imresamu/postgis:17-3.5
@@ -48,19 +48,43 @@ services:
     depends_on: [redis]
     networks: [platform-net]
 
-  example-service:
+  auth-service:
     build:
       context: ../..
-      dockerfile: services/example-service/Dockerfile
+      dockerfile: services/auth-service/Dockerfile
     environment:
       PORT: 3000
-      SERVICE_NAME: example-service
+      SERVICE_NAME: auth-service
       DATABASE_URL: postgresql://platform:local_dev_password@postgres:5432/platform?schema=public
       REDIS_URL: redis://redis:6379
+      # X1 — one shared prefix across services (kit reads the token blacklist
+      # through it).
+      REDIS_KEY_PREFIX: "nb:"
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: dev_secret_min_32_chars_change_me_xx
+      JWT_REFRESH_SECRET: dev_refresh_secret_min_32_chars_xxxx
+      THROTTLE_LIMIT: 100000
+    ports: ["3002:3000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    networks: [platform-net]
+
+  profile-service:
+    build:
+      context: ../..
+      dockerfile: services/profile-service/Dockerfile
+    environment:
+      PORT: 3000
+      SERVICE_NAME: profile-service
+      DATABASE_URL: postgresql://platform:local_dev_password@postgres:5432/platform?schema=public
+      REDIS_URL: redis://redis:6379
+      REDIS_KEY_PREFIX: "nb:"
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
       JWT_SECRET: dev_secret_min_32_chars_change_me_xx
       THROTTLE_LIMIT: 100000
-    ports: ["3001:3000"]
+    ports: ["3003:3000"]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }

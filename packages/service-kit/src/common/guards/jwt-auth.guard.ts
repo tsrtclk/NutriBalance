@@ -39,7 +39,7 @@ export class JwtAuthGuard extends AuthGuard("jwt-access") {
         err ||
         new UnauthorizedException({
           code: "UNAUTHORIZED",
-          message: "Oturum açmalısınız",
+          message: "Authentication required",
         })
       );
     }

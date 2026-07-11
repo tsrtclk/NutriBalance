@@ -8,19 +8,20 @@ description:
   tsconfig path + Kong route + docker-compose wiring. Triggers on "add a
   service", "new microservice", "scaffold a service".
 license: MIT
-best-for: All LLMs — procedural. Copy example-service, rename, swap the feature module.
+best-for: All LLMs — procedural. Copy the reference service, rename, swap the feature module.
 metadata:
   generic: true
 ---
 
 # Add a verify-only service
 
-Copy `services/example-service` and adapt it. **Never copy `service-kit`** —
-import it.
+Copy the repo's reference service and adapt it (upstream skeleton:
+`services/example-service`; NutriBalance: `services/profile-service`).
+**Never copy `service-kit`** — import it.
 
 ## 1. Scaffold
 
-- Duplicate `services/example-service` → `services/<name>-service`; update
+- Duplicate the reference service → `services/<name>-service`; update
   `package.json` `name` → `@platform/<name>-service` and the Dockerfile/compose
   service name.
 - Keep `src/config/configuration.ts` (a **superset of `ServiceKitConfig`** — must

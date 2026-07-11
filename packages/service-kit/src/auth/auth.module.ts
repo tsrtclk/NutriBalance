@@ -7,8 +7,8 @@ import { RedisModule } from "../redis/redis.module";
 import { JwtAccessStrategy } from "./jwt-access.strategy";
 
 /**
- * Verification-only auth module for asset-service. asset-service consumes
- * JWTs minted by user-service; it never issues them. The strategy validates
+ * Verification-only auth module. Kit consumers verify JWTs minted by the
+ * product's auth service; they never issue them. The strategy validates
  * the bearer token (signature + Redis blacklist) and attaches the
  * UserPayload to req.user.
  */

@@ -1,4 +1,4 @@
-// Shared NestJS scaffolding for Köydaş verify-only services: JWT auth (Passport
+// Shared NestJS scaffolding for verify-only services: JWT auth (Passport
 // strategy + module), Prisma + Redis modules, and the common decorators, DTOs,
 // filters, guards, interceptors and interfaces. Each service supplies its own
 // `configuration.ts` (a superset of ServiceKitConfig) + feature modules.

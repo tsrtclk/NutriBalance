@@ -27,6 +27,8 @@ event bus, e2e harness, and working protocol instead of re-deriving them.
 
 ```
 packages/
+  domain/         pure NutriBalance domain functions shared across services
+                  (computeTargets — Mifflin-St Jeor/TDEE/macros/water)
   service-kit/    verify-only NestJS scaffold: common decorators/dto/filters/
                   guards/interceptors/interfaces + Prisma/Redis/Auth modules,
                   ServiceKitConfig, the `geo` PostGIS query helper, and the
@@ -54,6 +56,9 @@ services/
   notification-service/ É9 — reminder scheduler (repas/eau/compléments/
                     séance), weight.logged consumer → alerte objectif,
                     deduped inbox, swappable push provider (mock until B17)
+  coach-service/    É8 — IA coach on the Claude API behind a swappable LLM
+                    port (deterministic mock without a key): conseil du jour,
+                    chat with history, bilan hebdo, plateau detection
 e2e/              Cucumber/Gherkin harness driving the live API (generic steps)
 infra/docker/     compose + Kong skeleton + runtime tsconfig
 scripts/          smoke-tests.sh — one endpoint per service through the gateway

@@ -2,7 +2,7 @@ import {
   computeBmr,
   computeTargets,
   type TargetInputs,
-} from "../src/modules/profile/compute-targets";
+} from "@platform/domain";
 
 // Reference subject: male, 30y, 180cm, 80kg, moderate activity.
 // Mifflin-St Jeor: 10*80 + 6.25*180 - 5*30 + 5 = 1780 kcal.

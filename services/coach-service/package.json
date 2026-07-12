@@ -1,8 +1,8 @@
 {
-  "name": "@platform/profile-service",
+  "name": "@platform/coach-service",
   "version": "0.1.0",
   "private": true,
-  "description": "NutriBalance profile service — É1 profile & onboarding (BMR/TDEE/macro targets) + É7 weight progress",
+  "description": "NutriBalance coach service — É8 IA coach on the Claude API (conseil quotidien, chat, bilan hebdo, détection plateau)",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
@@ -13,8 +13,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@platform/prisma-client": "0.1.0",
+    "@anthropic-ai/sdk": "^0.110.0",
     "@platform/domain": "0.1.0",
+    "@platform/prisma-client": "0.1.0",
     "@platform/shared-types": "0.1.0",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^3.2.0",

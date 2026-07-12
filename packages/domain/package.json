@@ -1,0 +1,16 @@
+{
+  "name": "@platform/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure NutriBalance domain functions shared across services (target derivation, …) — no I/O, no framework",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

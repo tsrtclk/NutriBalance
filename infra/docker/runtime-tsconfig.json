@@ -5,6 +5,8 @@
     "paths": {
       "@platform/shared-types": ["packages/shared-types/src"],
       "@platform/shared-types/*": ["packages/shared-types/src/*"],
+      "@platform/domain": ["packages/domain/src"],
+      "@platform/domain/*": ["packages/domain/src/*"],
       "@platform/shared-utils": ["packages/shared-utils/src"],
       "@platform/shared-utils/*": ["packages/shared-utils/src/*"],
       "@platform/prisma-client": ["packages/prisma-client/src"],

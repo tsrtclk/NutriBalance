@@ -7,7 +7,7 @@ import {
   Min,
 } from "class-validator";
 
-import type { ActivityLevel, Goal, Sex } from "../compute-targets";
+import type { ActivityLevel, Goal, Sex } from "@platform/domain";
 
 const SEXES: Sex[] = ["male", "female"];
 const ACTIVITY_LEVELS: ActivityLevel[] = [

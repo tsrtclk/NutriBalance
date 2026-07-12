@@ -24,6 +24,8 @@
     "paths": {
       "@platform/shared-types": ["packages/shared-types/src"],
       "@platform/shared-types/*": ["packages/shared-types/src/*"],
+      "@platform/domain": ["packages/domain/src"],
+      "@platform/domain/*": ["packages/domain/src/*"],
       "@platform/prisma-client": ["packages/prisma-client/src"],
       "@platform/events": ["packages/events/src"],
       "@platform/events/*": ["packages/events/src/*"],

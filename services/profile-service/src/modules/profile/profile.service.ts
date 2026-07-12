@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { EventBusService } from "@platform/events";
 
-import { ProfileRepository } from "./profile.repository";
 import {
   computeTargets,
   type ActivityLevel,
   type Goal,
   type Sex,
   type Targets,
-} from "./compute-targets";
+} from "@platform/domain";
+
+import { ProfileRepository } from "./profile.repository";
 import type { ProfileResponseDto } from "./dto/profile-response.dto";
 import type { UpsertProfileDto } from "./dto/upsert-profile.dto";
 

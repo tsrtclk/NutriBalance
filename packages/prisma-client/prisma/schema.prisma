@@ -36,6 +36,7 @@ model User {
   supplement_intakes      SupplementIntake[]
   notification_preference NotificationPreference?
   notifications           Notification[]
+  coach_messages          CoachMessage[]
   audit_logs              AuditLog[]
   offline_queue_entries   OfflineQueue[]
 
@@ -290,6 +291,21 @@ model Notification {
   @@unique([user_id, dedupe_key])
   @@index([user_id, sent_at])
   @@map("notifications")
+}
+
+/// É8 — coach chat history: the conversation context the LLM provider gets
+/// on every turn (advice/reports are cached in Redis, not stored here).
+model CoachMessage {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  role       String   @db.VarChar(10) // user | assistant
+  content    String
+  created_at DateTime @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+  @@map("coach_messages")
 }
 
 /// Generic audit trail written by the kit's AuditInterceptor.

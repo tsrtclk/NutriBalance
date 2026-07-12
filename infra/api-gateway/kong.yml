@@ -75,6 +75,19 @@ services:
           policy: redis
           redis_host: redis
 
+  - name: coach-service
+    url: http://coach-service:3000
+    routes:
+      - name: coach-routes
+        paths: ["/api/v1/coach"]
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 100000
+          policy: redis
+          redis_host: redis
+
 plugins:
   - name: cors
     config:

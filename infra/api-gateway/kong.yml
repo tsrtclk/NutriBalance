@@ -43,6 +43,19 @@ services:
           policy: redis
           redis_host: redis
 
+  - name: workout-service
+    url: http://workout-service:3000
+    routes:
+      - name: workout-routes
+        paths: ["/api/v1/exercises", "/api/v1/workouts"]
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 100000
+          policy: redis
+          redis_host: redis
+
 plugins:
   - name: cors
     config:

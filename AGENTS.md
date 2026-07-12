@@ -28,7 +28,8 @@ the É7 weight curve live in `profile-service`.
 packages/   service-kit, events, shared-types, prisma-client
 services/   auth-service (the ONLY token issuer) · profile-service
             (verify-only; the reference shape for new services) ·
-            nutrition-service (É3 foods + journal, swappable OFF provider)
+            nutrition-service (É3 foods + journal, swappable OFF provider) ·
+            workout-service (É6 library/séances/progression/suggestion)
 e2e/        Cucumber harness (live API through Kong)
 infra/      docker-compose + Kong skeleton
 docs/architecture/backlog.md   working-protocol

@@ -6,8 +6,8 @@
 > (`D#` decision, `B#` feature, `X#` cross-cutting). Reference IDs from code
 > (`// backlog: D1`), commit bodies, and PRs so code ↔ backlog stay linked.
 
-**Last updated:** 2026-07-12 (É4+É5 slice: hydration + supplements modules in
-nutrition-service).
+**Last updated:** 2026-07-12 (É9 slice: notification-service — reminders,
+goal alerts, inbox, push port).
 
 ---
 
@@ -40,7 +40,7 @@ MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there)
 | MVP     | É3 alimentaire                                                   | 🟢 API done (search/barcode/custom/journal/favoris; recettes+photo → B14)                                         |
 | MVP     | É6 sportif                                                       | 🟢 API done (library/séances/RPE/kcal/progression/suggestion; timer repos = mobile UI, routines pré-faites → B16) |
 | Confort | É4 hydratation · É5 compléments                                  | 🟢 API done (quick-add + day totals; liste/dosage/horaires + historique prise; rappels → É9)                      |
-| Confort | É9 notifications                                                 | ⬜ not started (B7 — now unblocked: B2 ✅ B5 ✅ B6 ✅)                                                            |
+| Confort | É9 notifications                                                 | 🟢 API done (rappels repas/eau/compléments/séance + alerte objectif; vrai push → B17)                             |
 | Diff.   | É8 IA coach · É10 gamification · É11 intégrations · É12 réglages | ⬜ not started                                                                                                    |
 
 ---
@@ -56,6 +56,8 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 | D3  | **Food data provider** (É3): OpenFoodFacts impl exists but the deterministic mock is bound outside production (`FOOD_PROVIDER`). Before flipping the prod default: contract-test the OFF mapping against the live API + decide a cache-refresh policy for stale OFF rows. | Swappable port `FOOD_DATA_PROVIDER`; mock in dev/CI so tests run offline with stable numbers                      | `nutrition-service/src/modules/foods/provider/`                    |
 | D4  | **Calories-burned estimate** (É6): MET bands per RPE (3.5 / 5.0 / 6.0), the MET formula, the 75 kg no-profile fallback and the 1-300 min duration clamp need product sign-off.                                                                                            | Pure `computeWorkoutCalories`, named constants                                                                    | `workout-service/src/modules/workouts/compute-workout-calories.ts` |
 | D5  | **Next-session heuristics** (É6): 48h recovery window, PPL / upper-lower rotation, beginner→full-body rule. Likely superseded by the É8 AI coach.                                                                                                                         | Pure `suggestNextSession` returning focus + avoid-list + reason                                                   | `workout-service/src/modules/workouts/suggest-next-session.ts`     |
+| D6  | **Push channel** (É9): no vendor chosen (FCM/APNs need credentials + device-token registration, B17). The inbox is the source of truth; push is best-effort.                                                                                                              | Swappable `PUSH_PROVIDER` port, mock bound in DI                                                                  | `notification-service/src/modules/notifications/push/`             |
+| D7  | **Timezones** (É9): all "HH:MM" reminder times are interpreted in UTC; per-user timezone (profile field? device header?) undecided.                                                                                                                                       | UTC everywhere; waking window 08:00-22:00 UTC                                                                     | `notification-service/src/modules/notifications/reminder-rules.ts` |
 
 ---
 
@@ -71,7 +73,7 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 | B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                                                                                                                           | É7   | —          |
 | B5  | ~~Hydration logging~~ → done (see §6)                                                                                                                                                              | É4   | —          |
 | B6  | ~~Supplements~~ → done (see §6)                                                                                                                                                                    | É5   | —          |
-| B7  | Notifications service (meal/hydration/supplement/workout reminders) — inputs all live now                                                                                                          | É9   | B2, B5, B6 |
+| B7  | ~~Notifications service~~ → done (see §6); real push vendor tracked as B17                                                                                                                         | É9   | B2, B5, B6 |
 | B8  | AI coach on the Claude API (daily advice, plateau detection, chat, weekly report)                                                                                                                  | É8   | B2, B3     |
 | B9  | Gamification: streaks, badges, weekly challenges                                                                                                                                                   | É10  | B2, B3     |
 | B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                                                    | É11  | —          |
@@ -81,6 +83,8 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 | B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                                                | É3   | —          |
 | B15 | Daily totals **vs targets** in one response (journal totals live in nutrition-service, targets in profile-service — needs a BFF/aggregate call or client-side merge decision)                      | É3   | —          |
 | B16 | É6 extras: routines pré-faites (Full Body / Haut-Bas / PPL templates avec rotation auto), GIF/vidéo média library, rest-timer config                                                               | É6   | —          |
+| B17 | Real push delivery: vendor choice (FCM/APNs), device-token registration endpoint, provider impl behind D6's port                                                                                   | É9   | D6         |
+| B18 | Scheduler hardening: fire default reminders for users without a stored prefs row; shard the per-minute scan before real scale                                                                      | É9   | —          |
 
 ---
 
@@ -102,7 +106,7 @@ Forward map: when a blocker lands, what to unblock.
 | -------------------- | --------------------------------------------------------------- |
 | D1 product sign-off  | Final target numbers surfaced in the mobile UI without caveats  |
 | D3 OFF contract test | Flipping `FOOD_PROVIDER` default to openfoodfacts in prod       |
-| —                    | B7 notifications fully unblocked (B2 ✅ B5 ✅ B6 ✅)            |
+| D6 vendor choice     | B17 real push delivery                                          |
 | —                    | B8 AI coach fully unblocked (journal ✅ + workouts ✅)          |
 | D5 supersession      | É8 coach replaces the heuristic suggestion (keep the endpoint)  |
 | B12 mobile shell     | `flutter-integration-testing` journeys, `mobile-ux-review` work |
@@ -113,6 +117,7 @@ Forward map: when a blocker lands, what to unblock.
 
 Move items here when ticked (date · ID · what landed · PR).
 
+- 2026-07-12 · B7 · notification-service landed: preferences (per-type toggles + horaires), minute scheduler (repas/eau/compléments/séance), weight.logged consumer → alerte objectif, deduped inbox + mock push port.
 - 2026-07-12 · B5+B6 · hydration + supplements modules landed in nutrition-service: quick-add water w/ day totals, supplement list (dosage + horaires) w/ intake history + deactivation.
 - 2026-07-12 · B3 · workout-service landed: seeded exercise library (20 moves, filter by muscle/equipment) + custom exercises, sessions (sets×reps×poids×repos), RPE completion with MET kcal estimate, per-exercise progression curve, next-session suggestion.
 - 2026-07-11 · B2 · nutrition-service landed: OFF/mock provider port, food search/barcode/custom, favorites/recents, journal with snapshot macros + day totals.
@@ -123,6 +128,21 @@ Move items here when ticked (date · ID · what landed · PR).
 
 ## 7. Changelog (per slice)
 
+- **2026-07-12 · É9 slice** — `notification-service` (port 3006):
+  `NotificationPreference` + `Notification` inbox models (unique
+  `(user_id, dedupe_key)` makes every firing idempotent) + migration;
+  preferences GET/PUT with schema-mirrored defaults; minute scheduler
+  (`@nestjs/schedule`) firing meal/hydration/workout reminders from prefs
+  and supplement reminders from the É5 schedule (X3 cross-table read);
+  the platform's first bus consumer — `weight.logged` → pure
+  `isGoalReached` → alerte objectif; single `dispatch()` path: deduped
+  inbox row, then best-effort mock push (D6 port) + `notification.sent`;
+  pure `reminder-rules` (D7: UTC times, 08:00-22:00 waking window) with
+  13 unit tests incl. the scheduler orchestration; Kong/compose/smoke
+  wiring; `notifications.feature` e2e — the goal alert is asserted
+  end-to-end through RabbitMQ with the polling step. B7 resolved; D6, D7,
+  B17, B18 opened. Confort tier complete. Next: B8 (É8 AI coach — fully
+  unblocked), B4 (É7 extras), B12 (Flutter, needs toolchain).
 - **2026-07-12 · É4+É5 slice** — `HydrationEntry`/`Supplement`/
   `SupplementIntake` models + migration; nutrition-service gains `hydration`
   (quick-add ml, UTC day view + total — the target stays in

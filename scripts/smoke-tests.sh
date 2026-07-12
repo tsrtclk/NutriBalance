@@ -42,6 +42,8 @@ CHECKS=(
   "nutrition|GET|supplements|401"
   "workout|GET|exercises|401"
   "workout|GET|workouts|401"
+  "notification|GET|notifications|401"
+  "notification|GET|notification-preferences|401"
 )
 
 for entry in "${CHECKS[@]}"; do

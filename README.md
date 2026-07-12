@@ -51,6 +51,9 @@ services/
   workout-service/  É6 — seeded exercise library (+ custom), sessions
                     (sets×reps×poids, RPE, MET kcal estimate), per-exercise
                     progression curve, next-session suggestion (48h recovery)
+  notification-service/ É9 — reminder scheduler (repas/eau/compléments/
+                    séance), weight.logged consumer → alerte objectif,
+                    deduped inbox, swappable push provider (mock until B17)
 e2e/              Cucumber/Gherkin harness driving the live API (generic steps)
 infra/docker/     compose + Kong skeleton + runtime tsconfig
 scripts/          smoke-tests.sh — one endpoint per service through the gateway

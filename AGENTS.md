@@ -30,7 +30,8 @@ services/   auth-service (the ONLY token issuer) · profile-service
             (verify-only; the reference shape for new services) ·
             nutrition-service (É3/É4/É5 foods + journal + hydration +
             supplements, swappable OFF provider) ·
-            workout-service (É6 library/séances/progression/suggestion)
+            workout-service (É6 library/séances/progression/suggestion) ·
+            notification-service (É9 reminders + bus consumer + inbox)
 e2e/        Cucumber harness (live API through Kong)
 infra/      docker-compose + Kong skeleton
 docs/architecture/backlog.md   working-protocol

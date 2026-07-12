@@ -20,6 +20,8 @@ export const PLATFORM_EVENTS = [
   "supplement.taken",
   // workout-service (É6)
   "workout.completed",
+  // notification-service (É9)
+  "notification.sent",
 ] as const;
 
 export type PlatformEventName = (typeof PLATFORM_EVENTS)[number];

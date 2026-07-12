@@ -34,7 +34,13 @@ services:
     url: http://nutrition-service:3000
     routes:
       - name: nutrition-routes
-        paths: ["/api/v1/foods", "/api/v1/journal"]
+        paths:
+          [
+            "/api/v1/foods",
+            "/api/v1/journal",
+            "/api/v1/hydration",
+            "/api/v1/supplements",
+          ]
         strip_path: false
     plugins:
       - name: rate-limiting

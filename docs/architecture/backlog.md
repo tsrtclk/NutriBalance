@@ -6,8 +6,8 @@
 > (`D#` decision, `B#` feature, `X#` cross-cutting). Reference IDs from code
 > (`// backlog: D1`), commit bodies, and PRs so code ↔ backlog stay linked.
 
-**Last updated:** 2026-07-12 (É6 slice: workout-service — library, sessions,
-progression, suggestion).
+**Last updated:** 2026-07-12 (É4+É5 slice: hydration + supplements modules in
+nutrition-service).
 
 ---
 
@@ -39,7 +39,8 @@ MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there)
 | MVP     | É7 progrès                                                       | 🟠 weight curve done; photos/mesures → B4                                                                         |
 | MVP     | É3 alimentaire                                                   | 🟢 API done (search/barcode/custom/journal/favoris; recettes+photo → B14)                                         |
 | MVP     | É6 sportif                                                       | 🟢 API done (library/séances/RPE/kcal/progression/suggestion; timer repos = mobile UI, routines pré-faites → B16) |
-| Confort | É4 hydratation · É5 compléments · É9 notifications               | ⬜ not started (water _target_ ships in É1 targets)                                                               |
+| Confort | É4 hydratation · É5 compléments                                  | 🟢 API done (quick-add + day totals; liste/dosage/horaires + historique prise; rappels → É9)                      |
+| Confort | É9 notifications                                                 | ⬜ not started (B7 — now unblocked: B2 ✅ B5 ✅ B6 ✅)                                                            |
 | Diff.   | É8 IA coach · É10 gamification · É11 intégrations · É12 réglages | ⬜ not started                                                                                                    |
 
 ---
@@ -62,24 +63,24 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 
 "Blocked by" → the decisions/services/X-items that must exist first.
 
-| ID  | Feature                                                                                                                                                                       | Épic | Blocked by |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------- |
-| B1  | Auth brute-force protection: per-account lockout / progressive delay (only a coarse IP throttle now)                                                                          | É2   | —          |
-| B2  | ~~Food journal service~~ → done (see §6); remaining É3 extras tracked as B14                                                                                                  | É3   | —          |
-| B3  | ~~Workout service~~ → done (see §6); remaining É6 extras tracked as B16                                                                                                       | É6   | —          |
-| B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                                                                                                      | É7   | —          |
-| B5  | Hydration logging (targets already served by `GET /profile/targets` → `water_ml`)                                                                                             | É4   | —          |
-| B6  | Supplements: list, dosage/schedule, intake history                                                                                                                            | É5   | —          |
-| B7  | Notifications service (meal/hydration/supplement/workout reminders)                                                                                                           | É9   | B2, B5, B6 |
-| B8  | AI coach on the Claude API (daily advice, plateau detection, chat, weekly report)                                                                                             | É8   | B2, B3     |
-| B9  | Gamification: streaks, badges, weekly challenges                                                                                                                              | É10  | B2, B3     |
-| B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                               | É11  | —          |
-| B11 | Settings: units (kg/lb), per-type notification toggles, RGPD account/data deletion                                                                                            | É12  | —          |
-| B12 | Flutter app shell under `mobile/` + first authenticated journey                                                                                                               | —    | —          |
-| B13 | Password reset / email verification flow (register/login ship without either)                                                                                                 | É2   | —          |
-| B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                           | É3   | —          |
-| B15 | Daily totals **vs targets** in one response (journal totals live in nutrition-service, targets in profile-service — needs a BFF/aggregate call or client-side merge decision) | É3   | —          |
-| B16 | É6 extras: routines pré-faites (Full Body / Haut-Bas / PPL templates avec rotation auto), GIF/vidéo média library, rest-timer config                                          | É6   | —          |
+| ID  | Feature                                                                                                                                                                                            | Épic | Blocked by |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------- |
+| B1  | Auth brute-force protection: per-account lockout / progressive delay (only a coarse IP throttle now)                                                                                               | É2   | —          |
+| B2  | ~~Food journal service~~ → done (see §6); remaining É3 extras tracked as B14                                                                                                                       | É3   | —          |
+| B3  | ~~Workout service~~ → done (see §6); remaining É6 extras tracked as B16                                                                                                                            | É6   | —          |
+| B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                                                                                                                           | É7   | —          |
+| B5  | ~~Hydration logging~~ → done (see §6)                                                                                                                                                              | É4   | —          |
+| B6  | ~~Supplements~~ → done (see §6)                                                                                                                                                                    | É5   | —          |
+| B7  | Notifications service (meal/hydration/supplement/workout reminders) — inputs all live now                                                                                                          | É9   | B2, B5, B6 |
+| B8  | AI coach on the Claude API (daily advice, plateau detection, chat, weekly report)                                                                                                                  | É8   | B2, B3     |
+| B9  | Gamification: streaks, badges, weekly challenges                                                                                                                                                   | É10  | B2, B3     |
+| B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                                                    | É11  | —          |
+| B11 | Settings: units (kg/lb), per-type notification toggles, RGPD account/data deletion                                                                                                                 | É12  | —          |
+| B12 | Flutter app shell under `mobile/` + first authenticated journey (needs a Flutter-toolchain session: no dart/flutter in the current env, and the UI-test discipline forbids shipping it unverified) | —    | —          |
+| B13 | Password reset / email verification flow (register/login ship without either)                                                                                                                      | É2   | —          |
+| B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                                                | É3   | —          |
+| B15 | Daily totals **vs targets** in one response (journal totals live in nutrition-service, targets in profile-service — needs a BFF/aggregate call or client-side merge decision)                      | É3   | —          |
+| B16 | É6 extras: routines pré-faites (Full Body / Haut-Bas / PPL templates avec rotation auto), GIF/vidéo média library, rest-timer config                                                               | É6   | —          |
 
 ---
 
@@ -101,7 +102,7 @@ Forward map: when a blocker lands, what to unblock.
 | -------------------- | --------------------------------------------------------------- |
 | D1 product sign-off  | Final target numbers surfaced in the mobile UI without caveats  |
 | D3 OFF contract test | Flipping `FOOD_PROVIDER` default to openfoodfacts in prod       |
-| B5 · B6              | B7 notifications content, B9 streak sources (B2 side is ✅)     |
+| —                    | B7 notifications fully unblocked (B2 ✅ B5 ✅ B6 ✅)            |
 | —                    | B8 AI coach fully unblocked (journal ✅ + workouts ✅)          |
 | D5 supersession      | É8 coach replaces the heuristic suggestion (keep the endpoint)  |
 | B12 mobile shell     | `flutter-integration-testing` journeys, `mobile-ux-review` work |
@@ -112,6 +113,7 @@ Forward map: when a blocker lands, what to unblock.
 
 Move items here when ticked (date · ID · what landed · PR).
 
+- 2026-07-12 · B5+B6 · hydration + supplements modules landed in nutrition-service: quick-add water w/ day totals, supplement list (dosage + horaires) w/ intake history + deactivation.
 - 2026-07-12 · B3 · workout-service landed: seeded exercise library (20 moves, filter by muscle/equipment) + custom exercises, sessions (sets×reps×poids×repos), RPE completion with MET kcal estimate, per-exercise progression curve, next-session suggestion.
 - 2026-07-11 · B2 · nutrition-service landed: OFF/mock provider port, food search/barcode/custom, favorites/recents, journal with snapshot macros + day totals.
 - 2026-07-11 · (bootstrap item) "replace the example `Place` domain" → NutriBalance schema (users/profiles/weight_entries) landed with the foundation slice.
@@ -121,6 +123,16 @@ Move items here when ticked (date · ID · what landed · PR).
 
 ## 7. Changelog (per slice)
 
+- **2026-07-12 · É4+É5 slice** — `HydrationEntry`/`Supplement`/
+  `SupplementIntake` models + migration; nutrition-service gains `hydration`
+  (quick-add ml, UTC day view + total — the target stays in
+  `GET /profile/targets`, B15) and `supplements` (list w/ dosage +
+  "HH:MM" horaires, intake log + history, deactivation keeps history and
+  409s new intakes) modules; events `hydration.logged`/`supplement.taken`
+  (B7/B9 feeds); Kong paths + smoke checks; hydration/supplements e2e
+  (5 scenarios); 6 new unit tests. B5+B6 resolved → B7 fully unblocked.
+  B12 (Flutter shell) noted as blocked on a Flutter-toolchain environment.
+  Next: B7 (É9 notifications) or B4 (É7 extras); B12 when tooling exists.
 - **2026-07-12 · É6 slice** — `workout-service`: `Exercise`/`Workout`/
   `WorkoutSet` models + migration with a 20-exercise seeded library
   (none/home/gym equipment tiers); exercises list/filter + private custom

@@ -9,6 +9,8 @@ import configuration from "./config/configuration";
 import { HealthController } from "./modules/health/health.controller";
 import { FoodsModule } from "./modules/foods/foods.module";
 import { JournalModule } from "./modules/journal/journal.module";
+import { HydrationModule } from "./modules/hydration/hydration.module";
+import { SupplementsModule } from "./modules/supplements/supplements.module";
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { JournalModule } from "./modules/journal/journal.module";
     AuthModule,
     FoodsModule,
     JournalModule,
+    HydrationModule,
+    SupplementsModule,
   ],
   controllers: [HealthController],
   providers: [],

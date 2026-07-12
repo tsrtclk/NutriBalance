@@ -13,9 +13,11 @@ export const PLATFORM_EVENTS = [
   // profile-service (É1 / É7)
   "profile.updated",
   "weight.logged",
-  // nutrition-service (É3)
+  // nutrition-service (É3 / É4 / É5)
   "food.created",
   "journal.entry_logged",
+  "hydration.logged",
+  "supplement.taken",
   // workout-service (É6)
   "workout.completed",
 ] as const;

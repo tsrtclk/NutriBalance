@@ -38,6 +38,8 @@ CHECKS=(
   "profile|GET|weight-entries|401"
   "nutrition|GET|foods/search|401"
   "nutrition|GET|journal|401"
+  "nutrition|GET|hydration|401"
+  "nutrition|GET|supplements|401"
   "workout|GET|exercises|401"
   "workout|GET|workouts|401"
 )

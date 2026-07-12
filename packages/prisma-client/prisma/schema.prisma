@@ -31,6 +31,9 @@ model User {
   favorite_foods        FavoriteFood[]
   custom_exercises      Exercise[]
   workouts              Workout[]
+  hydration_entries     HydrationEntry[]
+  supplements           Supplement[]
+  supplement_intakes    SupplementIntake[]
   audit_logs            AuditLog[]
   offline_queue_entries OfflineQueue[]
 
@@ -195,6 +198,56 @@ model WorkoutSet {
   @@index([workout_id])
   @@index([exercise_id])
   @@map("workout_sets")
+}
+
+/// É4 — one quick-add of water (verre/bouteille/quantité perso). The daily
+/// target lives in profile-service's computed targets (`water_ml`).
+model HydrationEntry {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  amount_ml  Int
+  drunk_at   DateTime @default(now()) @db.Timestamptz()
+  created_at DateTime @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, drunk_at])
+  @@map("hydration_entries")
+}
+
+/// É5 — a supplement the user takes (protéine, créatine, vitamines…):
+/// dosage + scheduled times of day; intakes land in SupplementIntake.
+model Supplement {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  name       String   @db.VarChar(120)
+  dosage     String   @db.VarChar(60) // free text: "5 g", "2 gélules"
+  times      String[] // scheduled times of day, "HH:MM"
+  active     Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz()
+  updated_at DateTime @updatedAt @default(now()) @db.Timestamptz()
+
+  user    User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  intakes SupplementIntake[]
+
+  @@index([user_id, active])
+  @@map("supplements")
+}
+
+/// É5 — one recorded intake (the "historique prise").
+model SupplementIntake {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String   @db.Uuid
+  supplement_id String   @db.Uuid
+  taken_at      DateTime @default(now()) @db.Timestamptz()
+  created_at    DateTime @default(now()) @db.Timestamptz()
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  supplement Supplement @relation(fields: [supplement_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, taken_at])
+  @@index([supplement_id, taken_at])
+  @@map("supplement_intakes")
 }
 
 /// Generic audit trail written by the kit's AuditInterceptor.

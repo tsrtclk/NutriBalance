@@ -43,9 +43,11 @@ services/
                     computeTargets: Mifflin-St Jeor BMR → TDEE → paced
                     calories → macros + water), weight entries (the curve).
                     This is the reference service shape — copy it for new ones.
-  nutrition-service/ É3 — food search/barcode via a swappable provider port
-                    (OpenFoodFacts or deterministic mock), custom foods,
-                    favorites/recents, journal with snapshot macros + day totals
+  nutrition-service/ É3+É4+É5 — food search/barcode via a swappable provider
+                    port (OpenFoodFacts or deterministic mock), custom foods,
+                    favorites/recents, journal with snapshot macros + day
+                    totals; hydration quick-add + day totals; supplements
+                    (dosage/horaires + intake history)
   workout-service/  É6 — seeded exercise library (+ custom), sessions
                     (sets×reps×poids, RPE, MET kcal estimate), per-exercise
                     progression curve, next-session suggestion (48h recovery)

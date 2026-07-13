@@ -15,6 +15,8 @@ import {
 import { PreferencesRepository } from "../preferences/preferences.repository";
 import { NotificationsService } from "../notifications/notifications.service";
 import {
+  badgeEarnedMessage,
+  challengeCompletedMessage,
   goalReachedMessage,
   isGoalReached,
 } from "../notifications/reminder-rules";
@@ -24,8 +26,10 @@ const QUEUE = "notification-service";
 
 /**
  * É9 — bus subscriber: `weight.logged` (É7) feeds the "alerte objectif
- * atteint". Best-effort: a broker outage logs a warning and the service
- * keeps serving its API; the durable queue catches up on reconnect.
+ * atteint"; `badge.earned` / `challenge.completed` (É10) feed the
+ * celebration notifications. Best-effort: a broker outage logs a warning and
+ * the service keeps serving its API; the durable queue catches up on
+ * reconnect.
  */
 @Injectable()
 export class PlatformEventsConsumer implements OnModuleInit, OnModuleDestroy {
@@ -45,11 +49,13 @@ export class PlatformEventsConsumer implements OnModuleInit, OnModuleDestroy {
       this.handle = await consumePlatformEvents({
         url,
         queue: QUEUE,
-        patterns: ["weight.logged"],
+        patterns: ["weight.logged", "badge.earned", "challenge.completed"],
         handler: (event) => this.onEvent(event),
         onError: (err) => this.logger.warn(`event handler failed: ${err}`),
       });
-      this.logger.log("consuming platform events (weight.logged)");
+      this.logger.log(
+        "consuming platform events (weight.logged, badge.earned, challenge.completed)",
+      );
     } catch (e) {
       this.logger.warn(`event consumer connect failed: ${e}`);
     }
@@ -60,6 +66,8 @@ export class PlatformEventsConsumer implements OnModuleInit, OnModuleDestroy {
   }
 
   private async onEvent(event: PlatformEvent): Promise<void> {
+    if (event.event === "badge.earned" || event.event === "challenge.completed")
+      return this.onGamification(event);
     if (event.event !== "weight.logged") return;
     const { user_id, weight_kg } = event.data as {
       user_id: string;
@@ -82,5 +90,22 @@ export class PlatformEventsConsumer implements OnModuleInit, OnModuleDestroy {
     if (!isGoalReached(profile.goal, target, weight_kg)) return;
 
     await this.notifications.dispatch(user_id, goalReachedMessage(target!));
+  }
+
+  /** É10 celebrations, gated by the per-type toggle (É12). */
+  private async onGamification(event: PlatformEvent): Promise<void> {
+    const data = event.data as {
+      user_id: string;
+      code: string;
+      title: string;
+      week_start?: string;
+    };
+    const prefs = await this.preferences.get(data.user_id);
+    if (!prefs.gamification_enabled) return;
+    const message =
+      event.event === "badge.earned"
+        ? badgeEarnedMessage(data.code, data.title)
+        : challengeCompletedMessage(data.week_start ?? "", data.title);
+    await this.notifications.dispatch(data.user_id, message);
   }
 }

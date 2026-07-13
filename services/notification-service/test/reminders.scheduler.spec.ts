@@ -20,6 +20,7 @@ function prefs(
     workout_enabled: true,
     workout_time: "18:00",
     goal_alerts_enabled: true,
+    gamification_enabled: true,
     ...overrides,
   };
 }

@@ -33,7 +33,8 @@ services/   auth-service (the ONLY token issuer) · profile-service
             supplements, swappable OFF provider) ·
             workout-service (É6 library/séances/progression/suggestion) ·
             notification-service (É9 reminders + bus consumer + inbox) ·
-            coach-service (É8 Claude coach behind a swappable LLM port)
+            coach-service (É8 Claude coach behind a swappable LLM port) ·
+            gamification-service (É10 streaks/badges/défis, bus-driven)
 e2e/        Cucumber harness (live API through Kong)
 infra/      docker-compose + Kong skeleton
 docs/architecture/backlog.md   working-protocol

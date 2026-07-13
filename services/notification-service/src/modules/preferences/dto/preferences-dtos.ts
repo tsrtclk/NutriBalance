@@ -49,6 +49,10 @@ export class UpdatePreferencesDto {
   @IsOptional()
   @IsBoolean()
   goal_alerts_enabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  gamification_enabled?: boolean;
 }
 
 export class PreferencesResponseDto {
@@ -61,4 +65,5 @@ export class PreferencesResponseDto {
   workout_enabled!: boolean;
   workout_time!: string;
   goal_alerts_enabled!: boolean;
+  gamification_enabled!: boolean;
 }

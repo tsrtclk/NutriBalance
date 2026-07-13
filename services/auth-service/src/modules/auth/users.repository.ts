@@ -22,4 +22,9 @@ export class UsersRepository {
   }): Promise<User> {
     return this.prisma.user.create({ data });
   }
+
+  /** É12 RGPD — every user-owned table cascades; audit_logs SetNull. */
+  delete(id: string): Promise<User> {
+    return this.prisma.user.delete({ where: { id } });
+  }
 }

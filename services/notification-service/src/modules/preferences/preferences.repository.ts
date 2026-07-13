@@ -17,6 +17,7 @@ export const DEFAULT_PREFERENCES: Omit<PreferencesResponseDto, "user_id"> = {
   workout_enabled: true,
   workout_time: "18:00",
   goal_alerts_enabled: true,
+  gamification_enabled: true,
 };
 
 @Injectable()
@@ -61,6 +62,7 @@ export class PreferencesRepository {
       workout_enabled: row.workout_enabled,
       workout_time: row.workout_time,
       goal_alerts_enabled: row.goal_alerts_enabled,
+      gamification_enabled: row.gamification_enabled,
     };
   }
 }

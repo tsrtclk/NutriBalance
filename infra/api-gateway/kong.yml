@@ -21,7 +21,7 @@ services:
     url: http://profile-service:3000
     routes:
       - name: profile-routes
-        paths: ["/api/v1/profile", "/api/v1/weight-entries"]
+        paths: ["/api/v1/profile", "/api/v1/weight-entries", "/api/v1/settings"]
         strip_path: false
     plugins:
       - name: rate-limiting
@@ -80,6 +80,19 @@ services:
     routes:
       - name: coach-routes
         paths: ["/api/v1/coach"]
+        strip_path: false
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 100000
+          policy: redis
+          redis_host: redis
+
+  - name: gamification-service
+    url: http://gamification-service:3000
+    routes:
+      - name: gamification-routes
+        paths: ["/api/v1/gamification"]
         strip_path: false
     plugins:
       - name: rate-limiting

@@ -15,6 +15,7 @@ permissions:
 
 env:
   NODE_VERSION: "24.16.0"
+  FLUTTER_VERSION: "3.44.6"
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -45,6 +46,27 @@ jobs:
           fi
       - run: npm run typecheck
       - run: npm run test
+
+  # B12 mobile shell (Flutter). Static + widget-level gate. The on-device
+  # integration_test/ journey needs an emulator + the live compose stack and
+  # runs on demand, not on every push (see mobile/README.md).
+  mobile:
+    name: Mobile (Flutter analyze · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze
+      - run: flutter test
 
   # E2E (Cucumber) against the full compose stack.
   # Load-bearing details of the pattern:

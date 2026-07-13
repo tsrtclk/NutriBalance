@@ -1,0 +1,13 @@
+# Build output and deps
+node_modules
+dist
+build
+coverage
+.turbo
+
+# Generated Prisma client + migration SQL
+packages/prisma-client/src/generated
+
+# The Flutter app is formatted by `dart format`, not Prettier — its generated
+# platform folders (ios/android) and pubspec must not be touched by Prettier.
+mobile

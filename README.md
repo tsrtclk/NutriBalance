@@ -98,7 +98,8 @@ AGENTS.md         the methodology any LLM/agent follows in this repo
 - [x] Add services under `services/`: auth-service (É2), profile-service
       (É1 + É7 weight curve)
 - [x] Wire the JWT-issuing auth service (Épic 2 — register/login/refresh)
-- [ ] Flutter app shell under `mobile/` (backlog B12)
+- [x] Flutter app shell under `mobile/` — login/register/onboarding/dashboard
+      journey, envelope-aware API client (backlog B12; per-épic screens → B21)
 
 ## Develop
 

@@ -6,8 +6,8 @@
 > (`D#` decision, `B#` feature, `X#` cross-cutting). Reference IDs from code
 > (`// backlog: D1`), commit bodies, and PRs so code ↔ backlog stay linked.
 
-**Last updated:** 2026-07-12 (É8 slice: coach-service on the Claude API +
-@platform/domain extraction).
+**Last updated:** 2026-07-13 (É10+É12 slice: gamification-service +
+réglages/RGPD).
 
 ---
 
@@ -32,17 +32,19 @@ On **every** feature/fix slice:
 
 MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there).
 
-| Tier    | Épics                                              | State                                                                                                             |
-| ------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| MVP     | É2 authentification                                | ✅ done & wired (register/login/refresh/logout)                                                                   |
-| MVP     | É1 profil/onboarding                               | 🟢 API done (targets computed; D1 sign-off pending)                                                               |
-| MVP     | É7 progrès                                         | 🟠 weight curve done; photos/mesures → B4                                                                         |
-| MVP     | É3 alimentaire                                     | 🟢 API done (search/barcode/custom/journal/favoris; recettes+photo → B14)                                         |
-| MVP     | É6 sportif                                         | 🟢 API done (library/séances/RPE/kcal/progression/suggestion; timer repos = mobile UI, routines pré-faites → B16) |
-| Confort | É4 hydratation · É5 compléments                    | 🟢 API done (quick-add + day totals; liste/dosage/horaires + historique prise; rappels → É9)                      |
-| Confort | É9 notifications                                   | 🟢 API done (rappels repas/eau/compléments/séance + alerte objectif; vrai push → B17)                             |
-| Diff.   | É8 IA coach                                        | 🟢 API done (conseil du jour, chat, bilan hebdo, plateau; vrai LLM derrière D9)                                   |
-| Diff.   | É10 gamification · É11 intégrations · É12 réglages | ⬜ not started                                                                                                    |
+| Tier    | Épics                           | State                                                                                                             |
+| ------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| MVP     | É2 authentification             | ✅ done & wired (register/login/refresh/logout)                                                                   |
+| MVP     | É1 profil/onboarding            | 🟢 API done (targets computed; D1 sign-off pending)                                                               |
+| MVP     | É7 progrès                      | 🟠 weight curve done; photos/mesures → B4                                                                         |
+| MVP     | É3 alimentaire                  | 🟢 API done (search/barcode/custom/journal/favoris; recettes+photo → B14)                                         |
+| MVP     | É6 sportif                      | 🟢 API done (library/séances/RPE/kcal/progression/suggestion; timer repos = mobile UI, routines pré-faites → B16) |
+| Confort | É4 hydratation · É5 compléments | 🟢 API done (quick-add + day totals; liste/dosage/horaires + historique prise; rappels → É9)                      |
+| Confort | É9 notifications                | 🟢 API done (rappels repas/eau/compléments/séance + alerte objectif; vrai push → B17)                             |
+| Diff.   | É8 IA coach                     | 🟢 API done (conseil du jour, chat, bilan hebdo, plateau; vrai LLM derrière D9)                                   |
+| Diff.   | É10 gamification                | 🟢 API done (streaks/badges/défi hebdo, bus-driven; célébrations → inbox)                                         |
+| Diff.   | É12 réglages                    | 🟢 API done (unités d'affichage, toggles par type, suppression compte RGPD)                                       |
+| Diff.   | É11 intégrations                | ⬜ not started (B10)                                                                                              |
 
 ---
 
@@ -50,17 +52,22 @@ MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there)
 
 Code uses a safe default + a `// backlog: D#` comment. Each needs a product call.
 
-| ID  | Decision needed                                                                                                                                                                                                                                                           | Safe default in code                                                                                              | Where                                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| D1  | **Target-formula constants** (É1): default/max weekly rates (loss 0.75/1.0 %BW, gain 0.25/0.5 %BW), macro split (protein g/kg per goal, fat 25% kcal), recomp −10% TDEE, 1200 kcal floor, water 35 ml/kg + activity bump. Needs product sign-off.                         | Named constants, pure fn returns a breakdown so the UI can explain itself                                         | `packages/domain/src/compute-targets.ts`                           |
-| D2  | **Session policy**: access 15 min / refresh 30 d, single session per (user, device), refresh reuse kills the device session. Confirm lifetimes + whether parallel sessions per device are needed.                                                                         | Env-tunable TTLs (`JWT_ACCESS_TTL_SEC`, `JWT_REFRESH_TTL_SEC`); rotation enforced via Redis `rt:{sub}:{deviceId}` | `auth-service/src/modules/auth/auth.service.ts`                    |
-| D3  | **Food data provider** (É3): OpenFoodFacts impl exists but the deterministic mock is bound outside production (`FOOD_PROVIDER`). Before flipping the prod default: contract-test the OFF mapping against the live API + decide a cache-refresh policy for stale OFF rows. | Swappable port `FOOD_DATA_PROVIDER`; mock in dev/CI so tests run offline with stable numbers                      | `nutrition-service/src/modules/foods/provider/`                    |
-| D4  | **Calories-burned estimate** (É6): MET bands per RPE (3.5 / 5.0 / 6.0), the MET formula, the 75 kg no-profile fallback and the 1-300 min duration clamp need product sign-off.                                                                                            | Pure `computeWorkoutCalories`, named constants                                                                    | `workout-service/src/modules/workouts/compute-workout-calories.ts` |
-| D5  | **Next-session heuristics** (É6): 48h recovery window, PPL / upper-lower rotation, beginner→full-body rule. Likely superseded by the É8 AI coach.                                                                                                                         | Pure `suggestNextSession` returning focus + avoid-list + reason                                                   | `workout-service/src/modules/workouts/suggest-next-session.ts`     |
-| D6  | **Push channel** (É9): no vendor chosen (FCM/APNs need credentials + device-token registration, B17). The inbox is the source of truth; push is best-effort.                                                                                                              | Swappable `PUSH_PROVIDER` port, mock bound in DI                                                                  | `notification-service/src/modules/notifications/push/`             |
-| D7  | **Timezones** (É9): all "HH:MM" reminder times are interpreted in UTC; per-user timezone (profile field? device header?) undecided.                                                                                                                                       | UTC everywhere; waking window 08:00-22:00 UTC                                                                     | `notification-service/src/modules/notifications/reminder-rules.ts` |
-| D8  | **Plateau rule** (É8): 21-day window, ≥4 points over ≥14 days, <0.3% BW change, lose/gain goals only. Product may prefer EMA or different windows.                                                                                                                        | Pure `detectPlateau`, named constants                                                                             | `coach-service/src/modules/coach/detect-plateau.ts`                |
-| D9  | **Coach LLM** (É8): Claude `claude-opus-4-8` behind a swappable port; mock bound outside prod. Before enabling prod: finalize the French system prompt, cost ceilings (cache TTLs), and an eval set for advice quality.                                                   | `COACH_LLM_PROVIDER` port; mock in dev/CI; best-effort fallback text on API errors                                | `coach-service/src/modules/coach/provider/`                        |
+| ID  | Decision needed                                                                                                                                                                                                                                                                          | Safe default in code                                                                                              | Where                                                              |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| D1  | **Target-formula constants** (É1): default/max weekly rates (loss 0.75/1.0 %BW, gain 0.25/0.5 %BW), macro split (protein g/kg per goal, fat 25% kcal), recomp −10% TDEE, 1200 kcal floor, water 35 ml/kg + activity bump. Needs product sign-off.                                        | Named constants, pure fn returns a breakdown so the UI can explain itself                                         | `packages/domain/src/compute-targets.ts`                           |
+| D2  | **Session policy**: access 15 min / refresh 30 d, single session per (user, device), refresh reuse kills the device session. Confirm lifetimes + whether parallel sessions per device are needed.                                                                                        | Env-tunable TTLs (`JWT_ACCESS_TTL_SEC`, `JWT_REFRESH_TTL_SEC`); rotation enforced via Redis `rt:{sub}:{deviceId}` | `auth-service/src/modules/auth/auth.service.ts`                    |
+| D3  | **Food data provider** (É3): OpenFoodFacts impl exists but the deterministic mock is bound outside production (`FOOD_PROVIDER`). Before flipping the prod default: contract-test the OFF mapping against the live API + decide a cache-refresh policy for stale OFF rows.                | Swappable port `FOOD_DATA_PROVIDER`; mock in dev/CI so tests run offline with stable numbers                      | `nutrition-service/src/modules/foods/provider/`                    |
+| D4  | **Calories-burned estimate** (É6): MET bands per RPE (3.5 / 5.0 / 6.0), the MET formula, the 75 kg no-profile fallback and the 1-300 min duration clamp need product sign-off.                                                                                                           | Pure `computeWorkoutCalories`, named constants                                                                    | `workout-service/src/modules/workouts/compute-workout-calories.ts` |
+| D5  | **Next-session heuristics** (É6): 48h recovery window, PPL / upper-lower rotation, beginner→full-body rule. Likely superseded by the É8 AI coach.                                                                                                                                        | Pure `suggestNextSession` returning focus + avoid-list + reason                                                   | `workout-service/src/modules/workouts/suggest-next-session.ts`     |
+| D6  | **Push channel** (É9): no vendor chosen (FCM/APNs need credentials + device-token registration, B17). The inbox is the source of truth; push is best-effort.                                                                                                                             | Swappable `PUSH_PROVIDER` port, mock bound in DI                                                                  | `notification-service/src/modules/notifications/push/`             |
+| D7  | **Timezones** (É9): all "HH:MM" reminder times are interpreted in UTC; per-user timezone (profile field? device header?) undecided.                                                                                                                                                      | UTC everywhere; waking window 08:00-22:00 UTC                                                                     | `notification-service/src/modules/notifications/reminder-rules.ts` |
+| D8  | **Plateau rule** (É8): 21-day window, ≥4 points over ≥14 days, <0.3% BW change, lose/gain goals only. Product may prefer EMA or different windows.                                                                                                                                       | Pure `detectPlateau`, named constants                                                                             | `coach-service/src/modules/coach/detect-plateau.ts`                |
+| D9  | **Coach LLM** (É8): Claude `claude-opus-4-8` behind a swappable port; mock bound outside prod. Before enabling prod: finalize the French system prompt, cost ceilings (cache TTLs), and an eval set for advice quality.                                                                  | `COACH_LLM_PROVIDER` port; mock in dev/CI; best-effort fallback text on API errors                                | `coach-service/src/modules/coach/provider/`                        |
+| D10 | **Streak semantics** (É10): UTC calendar days (aligned with D7); same-day repeats count events but don't grow the chain; a missed full day reads 0 on GET and resets on the next event; backfilled older days never rewind. A per-user timezone would move the day boundary.             | Pure `advanceStreak`/`effectiveCurrent`; day strings compare lexicographically                                    | `gamification-service/src/modules/gamification/streak-rules.ts`    |
+| D11 | **Badge catalogue** (É10): first-action + streak milestones (3/7/30) per kind, French titles. Product may want different paliers or seasonal badges.                                                                                                                                     | Code-side catalogue; `badge_awards` stores only (user, code, when); awards monotonic + idempotent                 | `gamification-service/src/modules/gamification/badge-rules.ts`     |
+| D12 | **Défi hebdo** (É10): deterministic rotation of a 4-entry catalogue by ISO week — same défi for everyone, zero scheduling. Product may want personalised or opt-in défis.                                                                                                                | Pure `challengeForWeek`; the def is frozen on the row at first write so a reshuffle never re-targets a live week  | `gamification-service/src/modules/gamification/challenge-rules.ts` |
+| D13 | **Units** (É12): the API stays metric (kg/cm) on every payload; the stored preference only drives client rendering, with shared 1-decimal converters in @platform/domain. Server-side conversion was rejected (cache/consistency); confirm with the mobile app.                          | `user_settings` row (defaults kg/cm); pure `kgToLb`/`cmToIn` & co.                                                | `packages/domain/src/unit-conversions.ts`                          |
+| D14 | **RGPD deletion** (É12): password re-confirmation then one cascade DELETE over users.id; audit_logs keep their rows with user_id nulled (confirm retention policy). Access tokens on _other_ devices stay verifiable ≤ 15 min (stateless verify) — accept or add a per-user kill switch. | `DELETE /auth/account`; blacklists the caller's device, publishes `user.deleted`                                  | `auth-service/src/modules/auth/auth.service.ts`                    |
 
 ---
 
@@ -78,9 +85,9 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 | B6  | ~~Supplements~~ → done (see §6)                                                                                                                                                                    | É5   | —          |
 | B7  | ~~Notifications service~~ → done (see §6); real push vendor tracked as B17                                                                                                                         | É9   | B2, B5, B6 |
 | B8  | ~~AI coach~~ → done (see §6)                                                                                                                                                                       | É8   | B2, B3     |
-| B9  | Gamification: streaks, badges, weekly challenges                                                                                                                                                   | É10  | B2, B3     |
+| B9  | ~~Gamification~~ → done (see §6): streaks, badges, défis hebdo — all bus-driven                                                                                                                    | É10  | B2, B3     |
 | B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                                                    | É11  | —          |
-| B11 | Settings: units (kg/lb), per-type notification toggles, RGPD account/data deletion                                                                                                                 | É12  | —          |
+| B11 | ~~Settings~~ → done (see §6): display units, per-type toggles (incl. gamification), RGPD deletion                                                                                                  | É12  | —          |
 | B12 | Flutter app shell under `mobile/` + first authenticated journey (needs a Flutter-toolchain session: no dart/flutter in the current env, and the UI-test discipline forbids shipping it unverified) | —    | —          |
 | B13 | Password reset / email verification flow (register/login ship without either)                                                                                                                      | É2   | —          |
 | B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                                                | É3   | —          |
@@ -120,6 +127,7 @@ Forward map: when a blocker lands, what to unblock.
 
 Move items here when ticked (date · ID · what landed · PR).
 
+- 2026-07-13 · B9+B11 · gamification-service landed (streaks/badges/défis hebdo driven by the four existing tracking events; célébrations reach the notification inbox through `badge.earned`/`challenge.completed`); réglages landed (display units in profile-service, `gamification_enabled` toggle, RGPD `DELETE /auth/account` with cascade wipe + `user.deleted`).
 - 2026-07-12 · B8+B15 · coach-service landed: swappable LLM port (mock/Claude claude-opus-4-8), conseil du jour (Redis-cached), chat with persisted history, bilan hebdo, pure plateau detection; computeTargets extracted to @platform/domain (B15 resolved — cross-service targets without duplication).
 - 2026-07-12 · B7 · notification-service landed: preferences (per-type toggles + horaires), minute scheduler (repas/eau/compléments/séance), weight.logged consumer → alerte objectif, deduped inbox + mock push port.
 - 2026-07-12 · B5+B6 · hydration + supplements modules landed in nutrition-service: quick-add water w/ day totals, supplement list (dosage + horaires) w/ intake history + deactivation.
@@ -132,6 +140,25 @@ Move items here when ticked (date · ID · what landed · PR).
 
 ## 7. Changelog (per slice)
 
+- **2026-07-13 · É10+É12 slice** — `gamification-service` (port 3008),
+  entirely bus-driven: the four tracking events the other épics already
+  publish (journal/hydratation/compléments/séances) advance pure
+  `advanceStreak` chains (D10 — UTC days, backfills never rewind), award
+  code-side catalogue badges (D11 — idempotent via composite PK +
+  `createMany skipDuplicates`), and move the deterministic défi hebdo
+  (D12 — ISO-week rotation, def frozen per row). `GET /gamification/
+streaks|badges|challenge`; publishes `badge.earned`/`challenge.completed`,
+  consumed by notification-service (gated by the new `gamification_enabled`
+  per-type toggle) into célébration inbox rows. É12: `user_settings`
+  display units in profile-service (D13 — API stays metric; shared
+  1-decimal converters in @platform/domain) and RGPD
+  `DELETE /auth/account` (D14 — password re-confirm, single cascade wipe,
+  session kill, `user.deleted` event). Boundary unit tests on the three
+  pure rule files + deletion/units tests; `settings.feature` +
+  `gamification.feature` e2e (6 scenarios — the badge célébration is
+  asserted through two RabbitMQ hops). B9, B11 resolved; D10-D14 opened.
+  Next: B4 (É7 extras), B10 (É11 intégrations), B12 (Flutter, needs
+  toolchain).
 - **2026-07-12 · É8 slice** — `coach-service` (port 3007) on the Claude API:
   swappable `COACH_LLM_PROVIDER` (deterministic mock for dev/CI; Claude
   `claude-opus-4-8` impl via @anthropic-ai/sdk with adaptive thinking,

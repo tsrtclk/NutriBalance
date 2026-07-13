@@ -16,7 +16,9 @@ export type NotificationType =
   | "hydration_reminder"
   | "supplement_reminder"
   | "workout_reminder"
-  | "goal_reached";
+  | "goal_reached"
+  | "badge_earned"
+  | "challenge_completed";
 
 export interface ReminderMessage {
   type: NotificationType;
@@ -109,5 +111,31 @@ export function goalReachedMessage(targetWeightKg: number): ReminderMessage {
     title: "Objectif atteint 🎉",
     body: `Félicitations — vous avez atteint votre poids cible de ${targetWeightKg} kg !`,
     dedupe_key: `goal:${targetWeightKg}`,
+  };
+}
+
+/** É10 — badge unlocked (dedupe mirrors the badge's own idempotency). */
+export function badgeEarnedMessage(
+  code: string,
+  title: string,
+): ReminderMessage {
+  return {
+    type: "badge_earned",
+    title: "Badge débloqué 🏅",
+    body: title,
+    dedupe_key: `badge:${code}`,
+  };
+}
+
+/** É10 — défi hebdo réussi (one per ISO week). */
+export function challengeCompletedMessage(
+  weekStart: string,
+  title: string,
+): ReminderMessage {
+  return {
+    type: "challenge_completed",
+    title: "Défi de la semaine réussi 🏆",
+    body: title,
+    dedupe_key: `challenge:${weekStart}`,
   };
 }

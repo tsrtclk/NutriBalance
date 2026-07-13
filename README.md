@@ -59,6 +59,9 @@ services/
   coach-service/    É8 — IA coach on the Claude API behind a swappable LLM
                     port (deterministic mock without a key): conseil du jour,
                     chat with history, bilan hebdo, plateau detection
+  gamification-service/ É10 — streaks, badges and défis hebdo, entirely
+                    driven by the event bus (no writes of its own); É12
+                    display units live in profile-service (/settings)
 e2e/              Cucumber/Gherkin harness driving the live API (generic steps)
 infra/docker/     compose + Kong skeleton + runtime tsconfig
 scripts/          smoke-tests.sh — one endpoint per service through the gateway

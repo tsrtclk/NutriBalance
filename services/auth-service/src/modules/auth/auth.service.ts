@@ -124,6 +124,28 @@ export class AuthService {
     await this.redis.del(`rt:${payload.sub}:${payload.deviceId}`);
   }
 
+  /**
+   * É12 RGPD — "suppression données" (backlog: D14). Re-confirms the password,
+   * then deletes the user row: every domain table cascades off users.id, so
+   * one DELETE wipes all personal data (audit_logs keep their rows with
+   * user_id nulled). Refresh is dead immediately (user lookup fails); access
+   * tokens on *other* devices stay verifiable for up to accessTtlSec since
+   * verification is stateless — accepted MVP residual, bounded at 15 min.
+   */
+  async deleteAccount(payload: UserPayload, password: string): Promise<void> {
+    const user = await this.users.findById(payload.sub);
+    const valid = user && (await bcrypt.compare(password, user.password_hash));
+    if (!valid) {
+      throw new UnauthorizedException({
+        code: "INVALID_CREDENTIALS",
+        message: "Password confirmation failed",
+      });
+    }
+    await this.users.delete(user.id);
+    await this.logout(payload);
+    await this.events.publish("user.deleted", { id: user.id });
+  }
+
   async me(userId: string): Promise<UserResponseDto> {
     const user = await this.users.findById(userId);
     if (!user) {

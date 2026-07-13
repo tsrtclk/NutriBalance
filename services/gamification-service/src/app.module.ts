@@ -7,9 +7,7 @@ import { AuthModule, PrismaModule, RedisModule } from "@platform/service-kit";
 
 import configuration from "./config/configuration";
 import { HealthController } from "./modules/health/health.controller";
-import { ProfileModule } from "./modules/profile/profile.module";
-import { SettingsModule } from "./modules/settings/settings.module";
-import { WeightModule } from "./modules/weight/weight.module";
+import { GamificationModule } from "./modules/gamification/gamification.module";
 
 @Module({
   imports: [
@@ -29,9 +27,7 @@ import { WeightModule } from "./modules/weight/weight.module";
     PrismaModule,
     RedisModule,
     AuthModule,
-    ProfileModule,
-    SettingsModule,
-    WeightModule,
+    GamificationModule,
   ],
   controllers: [HealthController],
   providers: [],

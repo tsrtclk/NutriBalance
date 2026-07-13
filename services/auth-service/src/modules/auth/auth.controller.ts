@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -24,6 +25,7 @@ import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshDto } from "./dto/refresh.dto";
+import { DeleteAccountDto } from "./dto/delete-account.dto";
 import type {
   AuthResponseDto,
   TokensDto,
@@ -70,5 +72,17 @@ export class AuthController {
   @Get("me")
   me(@CurrentUser() user: UserPayload): Promise<UserResponseDto> {
     return this.auth.me(user.sub);
+  }
+
+  /** É12 RGPD — suppression compte + données (D14). */
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @Delete("account")
+  async deleteAccount(
+    @CurrentUser() user: UserPayload,
+    @Body() dto: DeleteAccountDto,
+  ): Promise<{ deleted: true }> {
+    await this.auth.deleteAccount(user, dto.password);
+    return { deleted: true };
   }
 }

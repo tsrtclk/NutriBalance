@@ -46,6 +46,15 @@ class FakeUsersRepository {
     this.byEmail.set(user.email, user);
     return user;
   }
+
+  async delete(id: string): Promise<User> {
+    for (const u of this.byEmail.values())
+      if (u.id === id) {
+        this.byEmail.delete(u.email);
+        return u;
+      }
+    throw new Error("not found");
+  }
 }
 
 class FakeRedis {
@@ -161,6 +170,47 @@ describe("AuthService", () => {
     });
     expect(redis.store.has(`bl:access:${user.id}:dev-1`)).toBe(true);
     expect(redis.store.has(`rt:${user.id}:dev-1`)).toBe(false);
+    await expect(service.refresh(tokens.refresh_token)).rejects.toThrow(
+      UnauthorizedException,
+    );
+  });
+
+  it("account deletion re-confirms the password (É12 RGPD, D14)", async () => {
+    const { service, repo } = makeService();
+    const { user } = await service.register({ ...REGISTRATION });
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      authLevel: 1,
+      roles: [],
+      deviceId: "dev-1",
+      locale: "fr",
+    };
+    await expect(
+      service.deleteAccount(payload, "wrong-password"),
+    ).rejects.toThrow(UnauthorizedException);
+    expect(await repo.findById(user.id)).not.toBeNull();
+  });
+
+  it("account deletion wipes the user, kills the session, emits user.deleted", async () => {
+    const { service, repo, redis, events } = makeService();
+    const { user, tokens } = await service.register({ ...REGISTRATION });
+    await service.deleteAccount(
+      {
+        sub: user.id,
+        email: user.email,
+        authLevel: 1,
+        roles: [],
+        deviceId: "dev-1",
+        locale: "fr",
+      },
+      REGISTRATION.password,
+    );
+    expect(await repo.findById(user.id)).toBeNull();
+    expect(redis.store.has(`bl:access:${user.id}:dev-1`)).toBe(true);
+    expect(events.publish).toHaveBeenCalledWith("user.deleted", {
+      id: user.id,
+    });
     await expect(service.refresh(tokens.refresh_token)).rejects.toThrow(
       UnauthorizedException,
     );

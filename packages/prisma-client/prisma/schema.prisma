@@ -37,6 +37,10 @@ model User {
   notification_preference NotificationPreference?
   notifications           Notification[]
   coach_messages          CoachMessage[]
+  settings                UserSettings?
+  gamification_streaks    GamificationStreak[]
+  badge_awards            BadgeAward[]
+  challenge_progress      ChallengeProgress[]
   audit_logs              AuditLog[]
   offline_queue_entries   OfflineQueue[]
 
@@ -266,6 +270,7 @@ model NotificationPreference {
   workout_enabled     Boolean  @default(true)
   workout_time        String   @default("18:00") @db.VarChar(5)
   goal_alerts_enabled Boolean  @default(true)
+  gamification_enabled Boolean @default(true)
   updated_at          DateTime @updatedAt @default(now()) @db.Timestamptz()
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -306,6 +311,67 @@ model CoachMessage {
 
   @@index([user_id, created_at])
   @@map("coach_messages")
+}
+
+/// É12 — display preferences. Every API payload stays metric (D13); these
+/// units only tell clients how to render. Absent row = defaults (kg/cm).
+model UserSettings {
+  user_id     String   @id @db.Uuid
+  weight_unit String   @default("kg") @db.VarChar(2) // kg | lb
+  height_unit String   @default("cm") @db.VarChar(2) // cm | in
+  updated_at  DateTime @updatedAt @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+/// É10 — one consecutive-day chain per (user, activity kind), advanced by bus
+/// events (D10: UTC days; same-day repeats are no-ops, a gap resets to 1).
+model GamificationStreak {
+  user_id      String    @db.Uuid
+  kind         String    @db.VarChar(12) // journal | workout | hydration | supplement
+  current_len  Int       @default(0)
+  best_len     Int       @default(0)
+  last_day     DateTime? @db.Date
+  events_total Int       @default(0)
+  updated_at   DateTime  @updatedAt @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, kind])
+  @@map("gamification_streaks")
+}
+
+/// É10 — earned badges. The catalogue (codes, titles, thresholds) is code-side
+/// (D11); the composite PK makes awards idempotent under event redelivery.
+model BadgeAward {
+  user_id   String   @db.Uuid
+  code      String   @db.VarChar(40)
+  earned_at DateTime @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, code])
+  @@map("badge_awards")
+}
+
+/// É10 — défi hebdo: the challenge itself is a pure function of the ISO week
+/// (D12); only the per-user counter is stored. `last_day` dedupes "days"-metric
+/// challenges (one increment per UTC day).
+model ChallengeProgress {
+  user_id      String    @db.Uuid
+  week_start   DateTime  @db.Date
+  code         String    @db.VarChar(40)
+  progress     Int       @default(0)
+  target       Int
+  last_day     DateTime? @db.Date
+  completed_at DateTime? @db.Timestamptz()
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, week_start])
+  @@map("challenge_progress")
 }
 
 /// Generic audit trail written by the kit's AuditInterceptor.

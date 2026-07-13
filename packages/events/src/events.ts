@@ -8,8 +8,9 @@
 export const PLATFORM_EXCHANGE = "platform.events";
 
 export const PLATFORM_EVENTS = [
-  // auth-service (É2)
+  // auth-service (É2 / É12)
   "user.registered",
+  "user.deleted",
   // profile-service (É1 / É7)
   "profile.updated",
   "weight.logged",
@@ -22,6 +23,9 @@ export const PLATFORM_EVENTS = [
   "workout.completed",
   // notification-service (É9)
   "notification.sent",
+  // gamification-service (É10)
+  "badge.earned",
+  "challenge.completed",
 ] as const;
 
 export type PlatformEventName = (typeof PLATFORM_EVENTS)[number];

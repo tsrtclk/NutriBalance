@@ -6,8 +6,8 @@
 > (`D#` decision, `B#` feature, `X#` cross-cutting). Reference IDs from code
 > (`// backlog: D1`), commit bodies, and PRs so code ↔ backlog stay linked.
 
-**Last updated:** 2026-07-13 (É10+É12 slice: gamification-service +
-réglages/RGPD).
+**Last updated:** 2026-07-13 (B12 slice: Flutter app shell + first
+authenticated journey).
 
 ---
 
@@ -45,6 +45,7 @@ MVP tiers from `docs/product/backlog.md` (épics keep their É# numbering there)
 | Diff.   | É10 gamification                | 🟢 API done (streaks/badges/défi hebdo, bus-driven; célébrations → inbox)                                         |
 | Diff.   | É12 réglages                    | 🟢 API done (unités d'affichage, toggles par type, suppression compte RGPD)                                       |
 | Diff.   | É11 intégrations                | ⬜ not started (B10)                                                                                              |
+| Mobile  | Flutter app shell               | 🟢 shell + journey landed (login/register/onboarding/dashboard); more screens per épic → B21                      |
 
 ---
 
@@ -75,26 +76,29 @@ Code uses a safe default + a `// backlog: D#` comment. Each needs a product call
 
 "Blocked by" → the decisions/services/X-items that must exist first.
 
-| ID  | Feature                                                                                                                                                                                            | Épic | Blocked by |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------- |
-| B1  | Auth brute-force protection: per-account lockout / progressive delay (only a coarse IP throttle now)                                                                                               | É2   | —          |
-| B2  | ~~Food journal service~~ → done (see §6); remaining É3 extras tracked as B14                                                                                                                       | É3   | —          |
-| B3  | ~~Workout service~~ → done (see §6); remaining É6 extras tracked as B16                                                                                                                            | É6   | —          |
-| B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                                                                                                                           | É7   | —          |
-| B5  | ~~Hydration logging~~ → done (see §6)                                                                                                                                                              | É4   | —          |
-| B6  | ~~Supplements~~ → done (see §6)                                                                                                                                                                    | É5   | —          |
-| B7  | ~~Notifications service~~ → done (see §6); real push vendor tracked as B17                                                                                                                         | É9   | B2, B5, B6 |
-| B8  | ~~AI coach~~ → done (see §6)                                                                                                                                                                       | É8   | B2, B3     |
-| B9  | ~~Gamification~~ → done (see §6): streaks, badges, défis hebdo — all bus-driven                                                                                                                    | É10  | B2, B3     |
-| B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                                                    | É11  | —          |
-| B11 | ~~Settings~~ → done (see §6): display units, per-type toggles (incl. gamification), RGPD deletion                                                                                                  | É12  | —          |
-| B12 | Flutter app shell under `mobile/` + first authenticated journey (needs a Flutter-toolchain session: no dart/flutter in the current env, and the UI-test discipline forbids shipping it unverified) | —    | —          |
-| B13 | Password reset / email verification flow (register/login ship without either)                                                                                                                      | É2   | —          |
-| B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                                                | É3   | —          |
-| B15 | ~~Totals vs targets~~ → resolved by the `@platform/domain` extraction: any service computes targets from the shared pure package; the coach returns totals-vs-targets in one response (see §6)     | É3   | —          |
-| B16 | É6 extras: routines pré-faites (Full Body / Haut-Bas / PPL templates avec rotation auto), GIF/vidéo média library, rest-timer config                                                               | É6   | —          |
-| B17 | Real push delivery: vendor choice (FCM/APNs), device-token registration endpoint, provider impl behind D6's port                                                                                   | É9   | D6         |
-| B18 | Scheduler hardening: fire default reminders for users without a stored prefs row; shard the per-minute scan before real scale                                                                      | É9   | —          |
+| ID  | Feature                                                                                                                                                                                          | Épic | Blocked by |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---- | ---------- |
+| B1  | Auth brute-force protection: per-account lockout / progressive delay (only a coarse IP throttle now)                                                                                             | É2   | —          |
+| B2  | ~~Food journal service~~ → done (see §6); remaining É3 extras tracked as B14                                                                                                                     | É3   | —          |
+| B3  | ~~Workout service~~ → done (see §6); remaining É6 extras tracked as B16                                                                                                                          | É6   | —          |
+| B4  | Progress extras: photos, body measurements, objective-vs-réel comparison                                                                                                                         | É7   | —          |
+| B5  | ~~Hydration logging~~ → done (see §6)                                                                                                                                                            | É4   | —          |
+| B6  | ~~Supplements~~ → done (see §6)                                                                                                                                                                  | É5   | —          |
+| B7  | ~~Notifications service~~ → done (see §6); real push vendor tracked as B17                                                                                                                       | É9   | B2, B5, B6 |
+| B8  | ~~AI coach~~ → done (see §6)                                                                                                                                                                     | É8   | B2, B3     |
+| B9  | ~~Gamification~~ → done (see §6): streaks, badges, défis hebdo — all bus-driven                                                                                                                  | É10  | B2, B3     |
+| B10 | Integrations: Apple Health / Google Fit, PDF/CSV export, Stripe                                                                                                                                  | É11  | —          |
+| B11 | ~~Settings~~ → done (see §6): display units, per-type toggles (incl. gamification), RGPD deletion                                                                                                | É12  | —          |
+| B12 | ~~Flutter app shell~~ → done (see §6): `mobile/` shell + register→onboarding→dashboard journey, envelope-aware API client with token refresh, widget + on-device tests, CI `mobile` job          | —    | —          |
+| B13 | Password reset / email verification flow (register/login ship without either)                                                                                                                    | É2   | —          |
+| B14 | É3 extras: recettes maison (macro auto-calc), repas types réutilisables, photo-estimation (phase 2)                                                                                              | É3   | —          |
+| B15 | ~~Totals vs targets~~ → resolved by the `@platform/domain` extraction: any service computes targets from the shared pure package; the coach returns totals-vs-targets in one response (see §6)   | É3   | —          |
+| B16 | É6 extras: routines pré-faites (Full Body / Haut-Bas / PPL templates avec rotation auto), GIF/vidéo média library, rest-timer config                                                             | É6   | —          |
+| B17 | Real push delivery: vendor choice (FCM/APNs), device-token registration endpoint, provider impl behind D6's port                                                                                 | É9   | D6         |
+| B18 | Scheduler hardening: fire default reminders for users without a stored prefs row; shard the per-minute scan before real scale                                                                    | É9   | —          |
+| B19 | ~~(reserved)~~ — skipped to keep IDs monotonic                                                                                                                                                   | —    | —          |
+| B20 | Mobile secure token storage: move the JWT pair from `shared_preferences` (plaintext) to `flutter_secure_storage` (Keychain/Keystore) before a store release                                      | —    | B12        |
+| B21 | Mobile feature screens per épic: journal/hydration/workout/coach/notifications/settings UIs + the offline sync queue (offline-first-mobile skill); each new screen extends the on-device journey | —    | B12        |
 
 ---
 
@@ -119,7 +123,7 @@ Forward map: when a blocker lands, what to unblock.
 | D6 vendor choice     | B17 real push delivery                                          |
 | D9 prod enablement   | Real Claude answers in prod (needs ANTHROPIC_API_KEY + eval)    |
 | D5 supersession      | Coach exists — wire suggestion → coach advice when D9 goes prod |
-| B12 mobile shell     | `flutter-integration-testing` journeys, `mobile-ux-review` work |
+| B12 mobile shell ✓   | landed — unblocks B20 (secure storage), B21 (feature screens)   |
 
 ---
 
@@ -127,6 +131,7 @@ Forward map: when a blocker lands, what to unblock.
 
 Move items here when ticked (date · ID · what landed · PR).
 
+- 2026-07-13 · B12 · Flutter app shell landed under `mobile/`: envelope-aware API client (bearer + one-shot refresh-and-replay on 401), session controller driving unauth→onboarding→dashboard, login/register/onboarding (É1)/dashboard (É1 targets + É10 streaks/défi) screens; 10 widget/client tests offline + an on-device `integration_test/` journey against the compose stack; CI `mobile` job (analyze + test). Flutter 3.44.6.
 - 2026-07-13 · B9+B11 · gamification-service landed (streaks/badges/défis hebdo driven by the four existing tracking events; célébrations reach the notification inbox through `badge.earned`/`challenge.completed`); réglages landed (display units in profile-service, `gamification_enabled` toggle, RGPD `DELETE /auth/account` with cascade wipe + `user.deleted`).
 - 2026-07-12 · B8+B15 · coach-service landed: swappable LLM port (mock/Claude claude-opus-4-8), conseil du jour (Redis-cached), chat with persisted history, bilan hebdo, pure plateau detection; computeTargets extracted to @platform/domain (B15 resolved — cross-service targets without duplication).
 - 2026-07-12 · B7 · notification-service landed: preferences (per-type toggles + horaires), minute scheduler (repas/eau/compléments/séance), weight.logged consumer → alerte objectif, deduped inbox + mock push port.
@@ -140,6 +145,24 @@ Move items here when ticked (date · ID · what landed · PR).
 
 ## 7. Changelog (per slice)
 
+- **2026-07-13 · B12 slice** — the Flutter app shell + first authenticated
+  journey under `mobile/`. An envelope-aware `ApiClient` speaks the platform's
+  `{success, data}`/`{success, error}` contract, attaches the bearer token and
+  transparently refreshes once on a 401 before replaying (a second failure kills
+  the session). A `SessionController` owns the lifecycle
+  (unauthenticated → needsOnboarding → authenticated) and an `AuthGate` routes
+  off it, so auth transitions never leave a stale stack. Screens: login,
+  register, onboarding (the É1 target-formula inputs), and a dashboard reading
+  live `/profile/targets` (É1) next to `/gamification/streaks` + `/challenge`
+  (É10). Verified: 10 widget/client tests run offline against a mocked backend
+  (envelope parsing, the refresh-replay path, the full register→onboarding→
+  dashboard journey, form-validation gating, session-persistence + logout);
+  an on-device `integration_test/` journey drives the same flow against the
+  live compose stack (the UI counterpart of the Cucumber suite —
+  `flutter-integration-testing` skill). `flutter analyze` + `flutter test` run
+  in CI on every push (new `mobile` job, Flutter 3.44.6). B12 resolved; B20
+  (secure token storage), B21 (per-épic feature screens + offline sync queue)
+  opened. Next: B21 (more screens), B4 (É7 extras), B10 (É11 intégrations).
 - **2026-07-13 · É10+É12 slice** — `gamification-service` (port 3008),
   entirely bus-driven: the four tracking events the other épics already
   publish (journal/hydratation/compléments/séances) advance pure

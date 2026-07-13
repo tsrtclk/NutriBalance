@@ -20,7 +20,8 @@ the É7 weight curve live in `profile-service`.
 - **Runtime:** Node 24 LTS · **Backend:** NestJS 10 · TypeScript 5.4 · Turborepo
 - **ORM:** Prisma 6 (PostgreSQL + PostGIS) · **Cache:** Redis · **Bus:** RabbitMQ
 - **Gateway:** Kong (DB-less; services enforce JWT themselves)
-- **Mobile:** Flutter (add your app shell under `mobile/`)
+- **Mobile:** Flutter 3.44 app shell under `mobile/` (envelope-aware API client,
+  auth journey; widget tests offline + on-device `integration_test/` journey)
 
 ## Repo layout
 
@@ -35,6 +36,7 @@ services/   auth-service (the ONLY token issuer) · profile-service
             notification-service (É9 reminders + bus consumer + inbox) ·
             coach-service (É8 Claude coach behind a swappable LLM port) ·
             gamification-service (É10 streaks/badges/défis, bus-driven)
+mobile/     Flutter app shell (B12): auth journey + dashboard, API client
 e2e/        Cucumber harness (live API through Kong)
 infra/      docker-compose + Kong skeleton
 docs/architecture/backlog.md   working-protocol

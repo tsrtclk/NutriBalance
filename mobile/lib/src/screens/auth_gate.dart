@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/session_controller.dart';
-import 'dashboard_screen.dart';
+import 'home_shell.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -35,7 +35,7 @@ class _AuthGateState extends State<AuthGate> {
       ),
       SessionStatus.unauthenticated => const LoginScreen(),
       SessionStatus.needsOnboarding => const OnboardingScreen(),
-      SessionStatus.authenticated => const DashboardScreen(),
+      SessionStatus.authenticated => const HomeShell(),
     };
   }
 }

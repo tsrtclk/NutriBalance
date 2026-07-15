@@ -10,8 +10,7 @@
 | ID  | Sev | Area       | Issue                                                                 |
 | --- | --- | ---------- | --------------------------------------------------------------------- |
 | U1  | 🟡  | Onboarding | Single long scroll form; submit falls below the fold on small screens |
-| U2  | 🟡  | Errors     | Each screen owns its own inline error text — no shared pipeline       |
-| U3  | ⚪  | Dashboard  | Flat card list, no navigation to feature screens yet (arrive w/ B21)  |
+| U2  | 🟡  | Errors     | Shared snackbar primitive landed; auth screens not yet migrated to it |
 
 ## Details
 
@@ -23,23 +22,20 @@ below the fold (the widget test has to `ensureVisible` it). **Rework:** split
 into a 2–3 step `Stepper`/`PageView` (identity → mensurations → objectif), or
 pin the submit button to the bottom with a `Scaffold.bottomNavigationBar`.
 
-### U2 — No shared error pipeline 🟡
+### U2 — Finish migrating to the shared error pipeline 🟡
 
-Login/register/onboarding each render their own `Key('*_error')` `Text`, and
-the dashboard has its own retry state. **Rework:** one error surface (a
-`ScaffoldMessenger` snackbar helper or a shared `ErrorBanner`) fed by the
-`ApiException.code`, so copy + retry affordances stay consistent as screens
-multiply under B21.
-
-### U3 — Dashboard has no onward navigation ⚪
-
-The dashboard is read-only cards; there's nowhere to log a meal/water/workout
-yet. Expected — those screens are B21. **Rework:** add a bottom nav (Journal ·
-Séances · Coach · Réglages) when the first feature screen lands.
+The shared surface now exists — `mobile/lib/src/widgets/error_snackbar.dart`
+(`showApiError`, keyed to `ApiException.code`), used by the hydration and
+settings screens. **Remaining:** login/register/onboarding still render their
+own inline `Key('*_error')` `Text`; migrate them (or keep inline field errors
+but route transient failures through the snackbar) so there's one copy source.
 
 ## Resolved
 
-<!-- Move fixed items here with what landed + what surfaced them. -->
+- **U3 — Dashboard was a dead end** ⚪ (B21 slice 1). The dashboard is now the
+  Accueil tab of a `HomeShell` `NavigationBar` (Accueil · Hydratation ·
+  Réglages); logout moved to Réglages, removing the two-affordance smell.
+  More tabs (Journal · Séances · Coach) land with the rest of B21.
 
 ## How to apply
 

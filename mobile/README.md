@@ -17,8 +17,12 @@ lib/
                              storage before release, backlog B20)
     state/
       session_controller.dart  the auth lifecycle: unauth → onboarding → app
-    models/models.dart        read models (targets, streaks, weekly challenge)
-    screens/                  login · register · onboarding (É1) · dashboard
+    models/models.dart        read models (targets, streaks, challenge,
+                             hydration day, settings)
+    widgets/error_snackbar.dart  the one error→copy surface (U2)
+    screens/                  login · register · onboarding (É1) · home_shell
+                             (bottom nav) → dashboard · hydration (É4) ·
+                             settings (É12: units + logout + RGPD delete)
     app.dart                  MaterialApp + the status-driven AuthGate
 test/                        widget + client tests (offline, mocked backend)
 integration_test/            on-device journey against the live compose stack

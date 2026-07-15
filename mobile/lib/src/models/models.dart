@@ -65,6 +65,32 @@ class Streaks {
   final Map<String, Streak> byKind;
 }
 
+/// GET /hydration?date=… — the day's total + entries (É4).
+class HydrationDay {
+  HydrationDay({required this.date, required this.totalMl});
+
+  factory HydrationDay.fromJson(Map<String, dynamic> json) => HydrationDay(
+    date: (json['date'] as String?) ?? '',
+    totalMl: _num(json['total_ml']).toInt(),
+  );
+
+  final String date;
+  final int totalMl;
+}
+
+/// GET /settings — display units (É12). The API stays metric (D13).
+class UserSettings {
+  UserSettings({required this.weightUnit, required this.heightUnit});
+
+  factory UserSettings.fromJson(Map<String, dynamic> json) => UserSettings(
+    weightUnit: (json['weight_unit'] as String?) ?? 'kg',
+    heightUnit: (json['height_unit'] as String?) ?? 'cm',
+  );
+
+  final String weightUnit;
+  final String heightUnit;
+}
+
 /// GET /gamification/challenge — the week's défi (É10).
 class WeeklyChallenge {
   WeeklyChallenge({

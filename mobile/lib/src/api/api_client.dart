@@ -71,13 +71,30 @@ class ApiClient {
 
     final response = await http.Response.fromStream(await _http.send(request));
 
-    if (response.statusCode == 401 && !retried && access != null) {
+    // Only a generic guard rejection (an expired/blacklisted access token,
+    // code UNAUTHORIZED) is worth a refresh-and-replay. A business 401 with a
+    // specific code — e.g. INVALID_CREDENTIALS from a password re-confirm on
+    // account deletion — must surface as-is; refreshing the token would not
+    // fix it and would wrongly log the user out if the refresh then failed.
+    if (response.statusCode == 401 &&
+        !retried &&
+        access != null &&
+        _errorCode(response) == 'UNAUTHORIZED') {
       if (await _tryRefresh()) {
         return _send(method, path, body: body, retried: true);
       }
       onSessionExpired?.call();
     }
     return _decode(response);
+  }
+
+  String? _errorCode(http.Response response) {
+    try {
+      final error = _envelope(response)['error'] as Map<String, dynamic>?;
+      return error?['code'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<bool> _tryRefresh() async {

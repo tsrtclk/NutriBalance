@@ -60,17 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Aujourd\'hui'),
-        actions: [
-          IconButton(
-            key: const Key('dashboard_logout'),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-            onPressed: () => context.read<SessionController>().logout(),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Aujourd\'hui')),
       body: FutureBuilder<_DashboardData>(
         future: _future,
         builder: (context, snapshot) {

@@ -62,6 +62,17 @@ Map<String, dynamic> streaksJson({int hydrationCurrent = 2}) => {
   'supplement': {'current': 0, 'best': 0, 'last_day': null, 'events_total': 0},
 };
 
+Map<String, dynamic> hydrationDayJson({int totalMl = 0}) => {
+  'date': '2026-07-13',
+  'total_ml': totalMl,
+  'entries': <dynamic>[],
+};
+
+Map<String, dynamic> settingsJson({
+  String weightUnit = 'kg',
+  String heightUnit = 'cm',
+}) => {'weight_unit': weightUnit, 'height_unit': heightUnit};
+
 Map<String, dynamic> challengeJson({int progress = 1}) => {
   'week_start': '2026-07-13',
   'code': 'hydration_days_5',

@@ -80,6 +80,9 @@ void main() {
         'GET /api/v1/profile/targets': (_) => ok(targetsJson()),
         'GET /api/v1/gamification/streaks': (_) => ok(streaksJson()),
         'GET /api/v1/gamification/challenge': (_) => ok(challengeJson()),
+        // HomeShell mounts every tab, so hydration + settings load too.
+        'GET /api/v1/hydration': (_) => ok(hydrationDayJson()),
+        'GET /api/v1/settings': (_) => ok(settingsJson()),
       });
       await pumpApp(tester, backend);
 
@@ -154,13 +157,15 @@ void main() {
   });
 
   testWidgets(
-    'a stored session boots straight to the dashboard, logout leaves',
+    'a stored session boots to the dashboard; logout from Réglages leaves',
     (tester) async {
       final backend = fakeBackend({
         'GET /api/v1/profile': (_) => ok({'goal': 'maintain'}),
         'GET /api/v1/profile/targets': (_) => ok(targetsJson()),
         'GET /api/v1/gamification/streaks': (_) => ok(streaksJson()),
         'GET /api/v1/gamification/challenge': (_) => ok(challengeJson()),
+        'GET /api/v1/hydration': (_) => ok(hydrationDayJson()),
+        'GET /api/v1/settings': (_) => ok(settingsJson()),
         'POST /api/v1/auth/logout': (_) => ok({'ok': true}),
       });
       await pumpApp(
@@ -173,7 +178,10 @@ void main() {
       );
 
       expect(find.byKey(const Key('targets_kcal')), findsOneWidget);
-      await tester.tap(find.byKey(const Key('dashboard_logout')));
+      // Logout now lives in the Réglages tab (U3 — dashboard is not a dead end).
+      await tester.tap(find.text('Réglages'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings_logout')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('login_submit')), findsOneWidget);
     },

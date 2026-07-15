@@ -91,6 +91,16 @@ class SessionController extends ChangeNotifier {
     _set(SessionStatus.unauthenticated);
   }
 
+  /// É12 RGPD — password-confirmed account deletion (D14). On success the
+  /// server has wiped the account and blacklisted the session, so we drop
+  /// the local tokens and fall back to login. A wrong password throws
+  /// (INVALID_CREDENTIALS) and leaves the session intact.
+  Future<void> deleteAccount(String password) async {
+    await api.delete('/auth/account', body: {'password': password});
+    await tokens.clear();
+    _set(SessionStatus.unauthenticated);
+  }
+
   Future<void> _probeProfile() async {
     try {
       await api.get('/profile');

@@ -78,6 +78,75 @@ class HydrationDay {
   final int totalMl;
 }
 
+/// A food from GET /foods/search (É3): OpenFoodFacts cache or custom, macros
+/// per 100 g.
+class Food {
+  Food({
+    required this.id,
+    required this.name,
+    required this.brand,
+    required this.kcalPer100g,
+  });
+
+  factory Food.fromJson(Map<String, dynamic> json) => Food(
+    id: json['id'] as String,
+    name: (json['name'] as String?) ?? '',
+    brand: json['brand'] as String?,
+    kcalPer100g: _num(json['kcal_per_100g']),
+  );
+
+  final String id;
+  final String name;
+  final String? brand;
+  final double kcalPer100g;
+}
+
+/// One journal line (É3): a food eaten at a meal, with its snapshot kcal.
+class JournalEntry {
+  JournalEntry({
+    required this.id,
+    required this.foodName,
+    required this.quantityG,
+    required this.kcal,
+  });
+
+  factory JournalEntry.fromJson(Map<String, dynamic> json) => JournalEntry(
+    id: json['id'] as String,
+    foodName: (json['food_name'] as String?) ?? '',
+    quantityG: _num(json['quantity_g']),
+    kcal: _num(json['kcal']),
+  );
+
+  final String id;
+  final String foodName;
+  final double quantityG;
+  final double kcal;
+}
+
+/// GET /journal?date=… — entries grouped by meal + day totals (É3).
+class JournalDay {
+  JournalDay({required this.mealsByKey, required this.totalKcal});
+
+  factory JournalDay.fromJson(Map<String, dynamic> json) {
+    final rawMeals = (json['meals'] as Map<String, dynamic>?) ?? const {};
+    final meals = <String, List<JournalEntry>>{};
+    rawMeals.forEach((meal, list) {
+      meals[meal] = [
+        for (final e in (list as List<dynamic>))
+          JournalEntry.fromJson(e as Map<String, dynamic>),
+      ];
+    });
+    final totals = (json['totals'] as Map<String, dynamic>?) ?? const {};
+    return JournalDay(
+      mealsByKey: meals,
+      totalKcal: _num(totals['kcal']).toInt(),
+    );
+  }
+
+  final Map<String, List<JournalEntry>> mealsByKey;
+  final int totalKcal;
+}
+
 /// GET /settings — display units (É12). The API stays metric (D13).
 class UserSettings {
   UserSettings({required this.weightUnit, required this.heightUnit});

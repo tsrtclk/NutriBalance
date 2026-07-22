@@ -68,6 +68,33 @@ Map<String, dynamic> hydrationDayJson({int totalMl = 0}) => {
   'entries': <dynamic>[],
 };
 
+Map<String, dynamic> journalDayJson({
+  Map<String, List<Map<String, dynamic>>> meals = const {},
+  int totalKcal = 0,
+}) => {
+  'date': '2026-07-13',
+  'meals': meals,
+  'totals': {'kcal': totalKcal, 'protein_g': 0, 'carbs_g': 0, 'fat_g': 0},
+};
+
+Map<String, dynamic> foodJson({
+  String id = 'food-1',
+  String name = 'Banane',
+  int kcal = 89,
+}) => {
+  'id': id,
+  'source': 'off',
+  'off_barcode': null,
+  'owner_id': null,
+  'name': name,
+  'brand': null,
+  'kcal_per_100g': kcal,
+  'protein_per_100g': 1,
+  'carbs_per_100g': 23,
+  'fat_per_100g': 0,
+  'serving_size_g': null,
+};
+
 Map<String, dynamic> settingsJson({
   String weightUnit = 'kg',
   String heightUnit = 'cm',

@@ -42,6 +42,7 @@ void main() {
     'GET /api/v1/gamification/streaks': (_) => ok(streaksJson()),
     'GET /api/v1/gamification/challenge': (_) => ok(challengeJson()),
     'GET /api/v1/hydration': (_) => ok(hydrationDayJson()),
+    'GET /api/v1/journal': (_) => ok(journalDayJson()),
     'GET /api/v1/settings': (_) => ok(settingsJson()),
   };
 

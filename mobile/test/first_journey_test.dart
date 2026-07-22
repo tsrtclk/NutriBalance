@@ -80,7 +80,8 @@ void main() {
         'GET /api/v1/profile/targets': (_) => ok(targetsJson()),
         'GET /api/v1/gamification/streaks': (_) => ok(streaksJson()),
         'GET /api/v1/gamification/challenge': (_) => ok(challengeJson()),
-        // HomeShell mounts every tab, so hydration + settings load too.
+        // HomeShell mounts every tab, so journal + hydration + settings load.
+        'GET /api/v1/journal': (_) => ok(journalDayJson()),
         'GET /api/v1/hydration': (_) => ok(hydrationDayJson()),
         'GET /api/v1/settings': (_) => ok(settingsJson()),
       });
@@ -164,6 +165,7 @@ void main() {
         'GET /api/v1/profile/targets': (_) => ok(targetsJson()),
         'GET /api/v1/gamification/streaks': (_) => ok(streaksJson()),
         'GET /api/v1/gamification/challenge': (_) => ok(challengeJson()),
+        'GET /api/v1/journal': (_) => ok(journalDayJson()),
         'GET /api/v1/hydration': (_) => ok(hydrationDayJson()),
         'GET /api/v1/settings': (_) => ok(settingsJson()),
         'POST /api/v1/auth/logout': (_) => ok({'ok': true}),
